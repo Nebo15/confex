@@ -59,4 +59,23 @@ defmodule ConfexTest do
             mex: 600,
             tox: 600] = Confex.get_map(:confex, __MODULE__)
   end
+
+  test "nested maps" do
+    Application.put_env(:confex, __MODULE__, [
+       foo: [baz: "bar",
+             num: 1],
+       mex: {:system, :integer, "TESTINTENV"},
+       tox: [val: {:system, :integer, "TESTINTENV", 300}],
+    ])
+
+    assert [foo: [baz: "bar", num: 1],
+            mex: nil,
+            tox: [val: 300]] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTINTENV", "600")
+
+    assert [foo: [baz: "bar", num: 1],
+            mex: 600,
+            tox: [val: 600]] = Confex.get_map(:confex, __MODULE__)
+  end
 end

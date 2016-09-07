@@ -73,7 +73,7 @@ defmodule Confex do
   defp prepare_map(map, converter) do
     map
     |> Enum.map(fn {key, value} ->
-      case is_map(value) do
+      case is_list(value) do
         true  ->
           {key, prepare_map(value, converter)}
 
