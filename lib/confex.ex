@@ -126,7 +126,11 @@ defmodule Confex do
   # Helper to include configs into module and validate it at compile-time/run-time
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-      @otp_app Keyword.get(opts, :otp_app)
+      @otp_app opts
+      |> Keyword.get(:otp_app)
+
+      @module_config @otp_app
+      |> Confex.get_map(__MODULE__)
 
       def config do
         @otp_app
