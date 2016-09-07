@@ -1,9 +1,7 @@
 language: elixir
-
 cache:
   directories:
   - deps
-services:
 elixir:
   - 1.3.0
 otp_release:
