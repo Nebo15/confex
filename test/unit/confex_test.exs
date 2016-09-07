@@ -2,6 +2,12 @@ defmodule ConfexTest do
   use ExUnit.Case
   doctest Confex
 
+  setup do
+    System.delete_env("TESTENV")
+    System.delete_env("TESTINTENV")
+    :ok
+  end
+
   test "use nil maps" do
     assert nil == Confex.get_map(:myapp, :missing_map)
   end

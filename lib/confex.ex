@@ -19,7 +19,8 @@ defmodule Confex do
       ...> 1 = #{__MODULE__}.get(:myapp, :test_var2)
       1
 
-      iex> Application.put_env(:myapp, :test_var2, {:system, :integer, "TEST_ENV", "default_value"})
+      iex> System.delete_env("TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var2, {:system, :integer, "TEST_ENV", "default_value"})
       ...> "default_value" = #{__MODULE__}.get(:myapp, :test_var2)
       ...> System.put_env("TEST_ENV", "123")
       ...> 123 = #{__MODULE__}.get(:myapp, :test_var2)
@@ -121,4 +122,23 @@ defmodule Confex do
   # Basically we override all nil's with defaults.
   defp set_default(nil, default), do: default
   defp set_default(val, _), do: val
+
+  # Helper to include configs into module and validate it at compile-time/run-time
+  defmacro __using__(opts) do
+    quote bind_quoted: [opts: opts] do
+      @otp_app Keyword.get(opts, :otp_app)
+
+      def config do
+        @otp_app
+        |> Confex.get_map(__MODULE__)
+        |> validate_config
+      end
+
+      defp validate_config(conf) do
+        conf
+      end
+
+      defoverridable [validate_config: 1]
+    end
+  end
 end
