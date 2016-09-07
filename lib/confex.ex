@@ -67,6 +67,24 @@ defmodule Confex do
     |> set_default(default)
   end
 
+  @doc """
+  Receives Keyword list with Confex tuples and replaces them with an environment values.
+  Useful when you want to store configs not in `config.exs`.
+
+  # Example
+
+    iex> [test: "defaults"] = #{__MODULE__}.process_env([test: {:system, "some_test_var", "defaults"}])
+    [test: "defaults"]
+  """
+  @spec process_env(Keyword.t | atom | String.t | Integer.t) :: Keyword.t
+  def process_env(conf) when is_list(conf) do
+    prepare_map(conf)
+  end
+
+  def process_env(conf) do
+    get_value(conf)
+  end
+
   # Helpers to work with map values
   defp prepare_map(map, converter \\ &get_value/1)
   defp prepare_map(nil, _converter), do: nil

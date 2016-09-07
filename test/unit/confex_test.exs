@@ -78,4 +78,12 @@ defmodule ConfexTest do
             mex: 600,
             tox: [val: 600]] = Confex.get_map(:confex, __MODULE__)
   end
+
+  test "process envs" do
+    System.delete_env("process_test_var")
+    assert [test: "defaults"] = Confex.process_env([test: {:system, "process_test_var", "defaults"}])
+    System.put_env("process_test_var", "other_val")
+    assert [test: "other_val"] = Confex.process_env([test: {:system, "process_test_var", "defaults"}])
+    assert "bare_value" = Confex.process_env("bare_value")
+  end
 end
