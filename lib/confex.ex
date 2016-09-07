@@ -147,13 +147,26 @@ defmodule Confex do
       @otp_app opts
       |> Keyword.get(:otp_app)
 
-      @module_config @otp_app
-      |> Confex.get_map(__MODULE__)
+      @module_config_overrides opts
+      |> Keyword.delete(:otp_app)
 
       def config do
         @otp_app
         |> Confex.get_map(__MODULE__)
+        |> add_defaults(@module_config_overrides)
         |> validate_config
+      end
+
+      def add_defaults(defaults, nil), do: defaults
+      def add_defaults(nil, defaults) do
+        defaults
+        |> Confex.process_env
+      end
+
+      def add_defaults(config, defaults) do
+        defaults
+        |> Confex.process_env
+        |> Keyword.merge(config)
       end
 
       defp validate_config(conf) do

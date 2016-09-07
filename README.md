@@ -12,7 +12,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
     ```elixir
     def deps do
-      [{:confex, "~> 1.0.0"}]
+      [{:confex, "~> 1.1.0"}]
     end
     ```
 
@@ -92,6 +92,28 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
   Sometimes you want to validate configuration, for this you can define `def validate_config(config)` method, that will be called on each `config/0` usage.
 
   Confex doesn't give opinions on a validator to be used in overrided methods.
+
+# Configuration priorities
+
+By using Confex macro in your module, you allow to provide compile-time defaults for it.
+
+  1. Declare module
+
+    ```elixir
+    defmodule MyModule do
+      use Confex
+    end
+    ```
+
+  2. Provide defaults when using it
+
+    ```elixir
+    use MyModule,
+      otp_all: :myapp,
+      host: {:system, "HOST"}
+    ```
+
+  This configs will overwritten by any configuration that you have in your application env.
 
 # Helpful links
 

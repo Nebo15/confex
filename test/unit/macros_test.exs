@@ -3,7 +3,22 @@ defmodule ConfexMacrosTest do
   doctest Confex
 
   defmodule TestModule do
-    use Confex, otp_app: :confex
+    use Confex,
+      otp_app: :confex,
+      overriden_var: {:system, "OVER_VAR"}
+
+    defp validate_config(config) do
+      if is_nil(config) do
+        throw "Something went wrong"
+      end
+
+      config
+    end
+  end
+
+  defmodule TestModuleWithoutOTP do
+    use Confex,
+      overriden_var: {:system, "OVER_VAR"}
 
     defp validate_config(config) do
       if is_nil(config) do
@@ -17,23 +32,25 @@ defmodule ConfexMacrosTest do
   setup do
     System.delete_env("TESTENV")
     System.delete_env("TESTINTENV")
+    System.delete_env("OVER_VAR")
 
     Application.put_env(:confex, ConfexMacrosTest.TestModule, [
-       foo: "bar",
-       num: 1,
-       nix: {:system, :integer, "TESTINTENV"},
-       tix: {:system, :integer, "TESTINTENV", 300},
-       baz: {:system, "TESTENV"},
-       biz: {:system, "TESTENV", "default_val"},
-       mex: {:system, :string, "TESTENV"},
-       tox: {:system, :string, "TESTENV", "default_val"},
+      foo: "bar",
+      num: 1,
+      nix: {:system, :integer, "TESTINTENV"},
+      tix: {:system, :integer, "TESTINTENV", 300},
+      baz: {:system, "TESTENV"},
+      biz: {:system, "TESTENV", "default_val"},
+      mex: {:system, :string, "TESTENV"},
+      tox: {:system, :string, "TESTENV", "default_val"},
     ])
 
     :ok
   end
 
   test "different definition types" do
-    assert [foo: "bar",
+    assert [overriden_var: nil,
+            foo: "bar",
             num: 1,
             nix: nil,
             tix: 300,
@@ -44,8 +61,10 @@ defmodule ConfexMacrosTest do
 
     System.put_env("TESTENV", "other_val")
     System.put_env("TESTINTENV", "600")
+    System.put_env("OVER_VAR", "readme")
 
-    assert [foo: "bar",
+    assert [overriden_var: "readme",
+            foo: "bar",
             num: 1,
             nix: 600,
             tix: 600,
@@ -53,5 +72,13 @@ defmodule ConfexMacrosTest do
             biz: "other_val",
             mex: "other_val",
             tox: "other_val"] = TestModule.config
+  end
+
+  test "module without OTP app" do
+    assert [overriden_var: nil] = TestModuleWithoutOTP.config
+
+    System.put_env("OVER_VAR", "readme")
+
+    assert [overriden_var: "readme"] = TestModuleWithoutOTP.config
   end
 end
