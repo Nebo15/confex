@@ -171,10 +171,10 @@ defmodule Confex do
         |> Confex.process_env
       end
 
-      def add_defaults(config, defaults) do
+      def add_defaults(conf, defaults) do
         defaults
         |> Confex.process_env
-        |> Keyword.merge(config)
+        |> Keyword.merge(conf)
       end
 
       defp validate_config(conf) do
