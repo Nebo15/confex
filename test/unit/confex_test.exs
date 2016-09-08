@@ -93,13 +93,15 @@ defmodule ConfexTest do
        tox: [val: {:system, :integer, "TESTINTENV", 300}],
     ])
 
-    assert [foo: [baz: "bar", num: 1],
+    assert [foo: [baz: "bar",
+                  num: 1],
             mex: nil,
             tox: [val: 300]] = Confex.get_map(:confex, __MODULE__)
 
     System.put_env("TESTINTENV", "600")
 
-    assert [foo: [baz: "bar", num: 1],
+    assert [foo: [baz: "bar",
+                  num: 1],
             mex: 600,
             tox: [val: 600]] = Confex.get_map(:confex, __MODULE__)
   end

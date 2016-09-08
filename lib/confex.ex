@@ -101,10 +101,6 @@ defmodule Confex do
     {key, converter.(value)}
   end
 
-  defp prepare_list_element(value, converter) when is_list(value) do
-    prepare_list(value, converter)
-  end
-
   defp prepare_list_element(value, _converter) do
     get_value(value)
   end
