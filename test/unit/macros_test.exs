@@ -5,7 +5,8 @@ defmodule ConfexMacrosTest do
   defmodule TestModule do
     use Confex,
       otp_app: :confex,
-      overriden_var: {:system, "OVER_VAR"}
+      overriden_var: {:system, "OVER_VAR"},
+      overriden_list: [list: [foo: "bar", mix: {:system, "OVER_VAR"}]]
 
     defp validate_config(config) do
       if is_nil(config) do
@@ -75,6 +76,7 @@ defmodule ConfexMacrosTest do
 
     Application.put_env(:confex, ConfexMacrosTest.TestModule, [
       foo: "bar",
+      overriden_list: [list: [foo: "baz", bar: "foo"], key: "value"],
       num: 1,
       nix: {:system, :integer, "TESTINTENV"},
       tix: {:system, :integer, "TESTINTENV", 300},
@@ -90,6 +92,7 @@ defmodule ConfexMacrosTest do
   test "different definition types" do
     assert [overriden_var: nil,
             foo: "bar",
+            overriden_list: [list: [mix: nil, foo: "baz", bar: "foo"], key: "value"],
             num: 1,
             nix: nil,
             tix: 300,
@@ -104,6 +107,7 @@ defmodule ConfexMacrosTest do
 
     assert [overriden_var: "readme",
             foo: "bar",
+            overriden_list: [list: [mix: "readme", foo: "baz", bar: "foo"], key: "value"],
             num: 1,
             nix: 600,
             tix: 600,

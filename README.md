@@ -12,7 +12,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
     ```elixir
     def deps do
-      [{:confex, "~> 1.2.0"}]
+      [{:confex, "~> 1.3.0"}]
     end
     ```
 

@@ -165,16 +165,25 @@ defmodule Confex do
         |> validate_config
       end
 
-      def add_defaults(defaults, nil), do: defaults
-      def add_defaults(nil, defaults) do
+      defp add_defaults(defaults, nil), do: defaults
+      defp add_defaults(nil, defaults) do
         defaults
         |> Confex.process_env
       end
 
-      def add_defaults(conf, defaults) do
+      defp add_defaults(conf, defaults) do
         defaults
         |> Confex.process_env
-        |> Keyword.merge(conf)
+        |> Keyword.merge(conf, &merge_recursive/3)
+      end
+
+      defp merge_recursive(_k, v1, v2) do
+        case is_list(v2) do
+          true ->
+            Keyword.merge(v1, v2, &merge_recursive/3)
+          false ->
+            v2
+        end
       end
 
       defp validate_config(conf) do
