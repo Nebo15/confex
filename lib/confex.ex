@@ -63,7 +63,7 @@ defmodule Confex do
   def get_map(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
     app
     |> Application.get_env(key)
-    |> prepare_map
+    |> prepare_list
     |> set_default(default)
   end
 
@@ -78,7 +78,7 @@ defmodule Confex do
   """
   @spec process_env(Keyword.t | atom | String.t | Integer.t) :: Keyword.t
   def process_env(conf) when is_list(conf) do
-    prepare_map(conf)
+    prepare_list(conf)
   end
 
   def process_env(conf) do
@@ -86,19 +86,27 @@ defmodule Confex do
   end
 
   # Helpers to work with map values
-  defp prepare_map(map, converter \\ &get_value/1)
-  defp prepare_map(nil, _converter), do: nil
-  defp prepare_map(map, converter) do
+  defp prepare_list(map, converter \\ &get_value/1)
+  defp prepare_list(nil, _converter), do: nil
+  defp prepare_list(map, converter) do
     map
-    |> Enum.map(fn {key, value} ->
-      case is_list(value) do
-        true  ->
-          {key, prepare_map(value, converter)}
+    |> Enum.map(&prepare_list_element(&1, converter))
+  end
 
-        false ->
-          {key, converter.(value)}
-      end
-    end)
+  defp prepare_list_element({key, value}, converter) when is_list(value) and key != :system do
+    {key, prepare_list(value, converter)}
+  end
+
+  defp prepare_list_element({key, value}, converter) when key != :system do
+    {key, converter.(value)}
+  end
+
+  defp prepare_list_element(value, converter) when is_list(value) do
+    prepare_list(value, converter)
+  end
+
+  defp prepare_list_element(value, _converter) do
+    get_value(value)
   end
 
   # Helpers to parse value from supported definition tuples

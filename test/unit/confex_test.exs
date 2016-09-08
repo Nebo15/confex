@@ -5,6 +5,7 @@ defmodule ConfexTest do
   setup do
     System.delete_env("TESTENV")
     System.delete_env("TESTINTENV")
+    Application.delete_env(:confex, __MODULE__)
     :ok
   end
 
@@ -37,6 +38,30 @@ defmodule ConfexTest do
             biz: "other_val",
             mex: "other_val",
             tox: "other_val"] = Confex.get_map(:confex, __MODULE__)
+  end
+
+  test "different bare values" do
+    Application.put_env(:confex, __MODULE__, [
+       foo: "bar",
+       num: 1,
+       map: %{key: {:system, "TESTENV"}},
+       baz: [1, 2, 3, {:system, "TESTENV"}],
+       boom: {1, 2, 3}
+    ])
+
+    assert [foo: "bar",
+            num: 1,
+            map: %{key: {:system, "TESTENV"}},
+            baz: [1, 2, 3, nil],
+            boom: {1, 2, 3}] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "other_val")
+
+    assert [foo: "bar",
+            num: 1,
+            map: %{key: {:system, "TESTENV"}},
+            baz: [1, 2, 3, "other_val"],
+            boom: {1, 2, 3}] = Confex.get_map(:confex, __MODULE__)
   end
 
   test "integer fields" do
