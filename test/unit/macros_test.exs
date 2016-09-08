@@ -22,11 +22,50 @@ defmodule ConfexMacrosTest do
 
     defp validate_config(config) do
       if is_nil(config) do
-        throw "Something went wrong"
+        throw "Something went wrong #1"
       end
 
       config
     end
+  end
+
+  defmodule OtherModuleWithMacro do
+    defmacro __using__(opts) do
+      quote bind_quoted: [opts: opts] do
+        use Confex, opts
+
+        defp validate_config(config) do
+          if is_nil(config) do
+            throw "Something went wrong #2"
+          end
+
+          config
+        end
+
+        defoverridable [validate_config: 1]
+      end
+    end
+  end
+
+  defmodule OtherModuleWithMacro2 do
+    defmacro __using__(opts) do
+      quote bind_quoted: [opts: opts] do
+        use OtherModuleWithMacro, opts
+
+        defp validate_config(config) do
+          if is_nil(config) do
+            throw "Something went wrong #3"
+          end
+
+          config
+        end
+      end
+    end
+  end
+
+  defmodule TestModuleFromMacro do
+    use OtherModuleWithMacro2,
+      some_var: "val"
   end
 
   setup do
@@ -80,5 +119,15 @@ defmodule ConfexMacrosTest do
     System.put_env("OVER_VAR", "readme")
 
     assert [overriden_var: "readme"] = TestModuleWithoutOTP.config
+  end
+
+  test "intermediate macro test" do
+    assert [some_var: "val"] = TestModuleFromMacro.config
+
+    System.put_env("TESTENV", "other_val")
+    System.put_env("TESTINTENV", "600")
+    System.put_env("OVER_VAR", "readme")
+
+    assert [some_var: "val"] = TestModuleFromMacro.config
   end
 end
