@@ -185,7 +185,11 @@ defmodule Confex do
         |> validate_config
       end
 
-      defp add_defaults(defaults, nil), do: defaults
+      defp add_defaults(conf, nil) do
+        conf
+        |> Confex.process_env
+      end
+
       defp add_defaults(nil, defaults) do
         defaults
         |> Confex.process_env
@@ -193,8 +197,8 @@ defmodule Confex do
 
       defp add_defaults(conf, defaults) do
         defaults
-        |> Confex.process_env
         |> Keyword.merge(conf, &merge_recursive/3)
+        |> Confex.process_env
       end
 
       defp merge_recursive(_k, v1, v2) do
