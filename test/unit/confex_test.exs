@@ -4,7 +4,6 @@ defmodule ConfexTest do
 
   setup do
     System.delete_env("TESTENV")
-    System.delete_env("TESTINTENV")
     Application.delete_env(:confex, __MODULE__)
     :ok
   end
@@ -13,100 +12,144 @@ defmodule ConfexTest do
     assert nil == Confex.get_map(:myapp, :missing_map)
   end
 
-  test "different definition types" do
+  test "keeps bare values" do
     Application.put_env(:confex, __MODULE__, [
-       foo: "bar",
-       num: 1,
-       baz: {:system, "TESTENV"},
-       biz: {:system, "TESTENV", "default_val"},
-       mex: {:system, :string, "TESTENV"},
-       tox: {:system, :string, "TESTENV", "default_val"},
+       string: "bar",
+       integer: 1,
+       list: [1, 2, 3],
+       tuple: {1, 2, 3, {:system, "THIS_DOESNT_WORK"}},
+       map: %{key: {:system, "THIS_DOESNT_WORK"}}
     ])
 
-    assert [foo: "bar",
-            num: 1,
-            baz: nil,
-            biz: "default_val",
-            mex: nil,
-            tox: "default_val"] = Confex.get_map(:confex, __MODULE__)
-
-    System.put_env("TESTENV", "other_val")
-
-    assert [foo: "bar",
-            num: 1,
-            baz: "other_val",
-            biz: "other_val",
-            mex: "other_val",
-            tox: "other_val"] = Confex.get_map(:confex, __MODULE__)
+    assert [string: "bar",
+            integer: 1,
+            list: [1, 2, 3],
+            tuple: {1, 2, 3, {:system, "THIS_DOESNT_WORK"}},
+            map: %{key: {:system, "THIS_DOESNT_WORK"}}] = Confex.get_map(:confex, __MODULE__)
   end
 
-  test "different bare values" do
+  test "sets integers" do
     Application.put_env(:confex, __MODULE__, [
-       foo: "bar",
-       num: 1,
-       map: %{key: {:system, "TESTENV"}},
-       baz: [1, 2, 3, {:system, "TESTENV"}],
-       boom: {1, 2, 3}
+       a: {:system, :integer, "TESTENV"},
+       b: {:system, :integer, "TESTENV", 300},
     ])
 
-    assert [foo: "bar",
-            num: 1,
-            map: %{key: {:system, "TESTENV"}},
-            baz: [1, 2, 3, nil],
-            boom: {1, 2, 3}] = Confex.get_map(:confex, __MODULE__)
+    assert [a: nil,
+            b: 300] = Confex.get_map(:confex, __MODULE__)
 
-    System.put_env("TESTENV", "other_val")
+    System.put_env("TESTENV", "600")
 
-    assert [foo: "bar",
-            num: 1,
-            map: %{key: {:system, "TESTENV"}},
-            baz: [1, 2, 3, "other_val"],
-            boom: {1, 2, 3}] = Confex.get_map(:confex, __MODULE__)
+    assert [a: 600,
+            b: 600] = Confex.get_map(:confex, __MODULE__)
   end
 
-  test "integer fields" do
+  test "sets booleans" do
     Application.put_env(:confex, __MODULE__, [
-       foo: "bar",
-       num: 1,
-       mex: {:system, :integer, "TESTINTENV"},
-       tox: {:system, :integer, "TESTINTENV", 300},
+       a: {:system, :boolean, "TESTENV"},
+       b: {:system, :boolean, "TESTENV", true},
     ])
 
-    assert [foo: "bar",
-            num: 1,
-            mex: nil,
-            tox: 300] = Confex.get_map(:confex, __MODULE__)
+    assert [a: nil,
+            b: true] = Confex.get_map(:confex, __MODULE__)
 
-    System.put_env("TESTINTENV", "600")
+    System.put_env("TESTENV", "true")
 
-    assert [foo: "bar",
-            num: 1,
-            mex: 600,
-            tox: 600] = Confex.get_map(:confex, __MODULE__)
+    assert [a: true,
+            b: true] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "false")
+
+    assert [a: false,
+            b: false] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "TRuE")
+
+    assert [a: true,
+            b: true] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "FaLSE")
+
+    assert [a: false,
+            b: false] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "1")
+
+    assert [a: true,
+            b: true] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "0")
+
+    assert [a: false,
+            b: false] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "yes")
+
+    assert [a: true,
+            b: true] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "No")
+
+    assert [a: false,
+            b: false] = Confex.get_map(:confex, __MODULE__)
+
+
+    System.put_env("TESTENV", "hola")
+
+    assert [a: nil,
+            b: true] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "como_estas?")
+
+    assert [a: nil,
+            b: true] = Confex.get_map(:confex, __MODULE__)
   end
 
-  test "nested maps" do
+  test "sets strings" do
     Application.put_env(:confex, __MODULE__, [
-       foo: [baz: "bar",
-             num: 1],
-       mex: {:system, :integer, "TESTINTENV"},
-       tox: [val: {:system, :integer, "TESTINTENV", 300}],
+       a: {:system, :string, "TESTENV"},
+       b: {:system, :string, "TESTENV", "default_val"},
+       c: {:system, "TESTENV"},
+       d: {:system, "TESTENV", "default_val"}
     ])
 
-    assert [foo: [baz: "bar",
-                  num: 1],
-            mex: nil,
-            tox: [val: 300]] = Confex.get_map(:confex, __MODULE__)
+    assert [a: nil,
+            b: "default_val",
+            c: nil,
+            d: "default_val"] = Confex.get_map(:confex, __MODULE__)
 
-    System.put_env("TESTINTENV", "600")
+    System.put_env("TESTENV", "env_val")
 
-    assert [foo: [baz: "bar",
-                  num: 1],
-            mex: 600,
-            tox: [val: 600]] = Confex.get_map(:confex, __MODULE__)
+    assert [a: "env_val",
+            b: "env_val",
+            c: "env_val",
+            d: "env_val"] = Confex.get_map(:confex, __MODULE__)
   end
 
-  test "process envs" do
+  test "walks on nested maps" do
+    Application.put_env(:confex, __MODULE__, [
+       a: [aa: "bar",
+           ab: 1],
+       b: {:system, :integer, "TESTENV"},
+       c: [ca: {:system, :integer, "TESTENV", 300}],
+       d: [1, 2, {:system, :integer, "TESTENV", 300}]
+    ])
+
+    assert [a: [aa: "bar",
+                ab: 1],
+            b: nil,
+            c: [ca: 300],
+            d: [1, 2, 300]] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "600")
+
+    assert [a: [aa: "bar",
+                ab: 1],
+            b: 600,
+            c: [ca: 600],
+            d: [1, 2, 600]] = Confex.get_map(:confex, __MODULE__)
+  end
+
+  test "processes environment maps" do
     System.delete_env("process_test_var")
     assert [test: "defaults"] = Confex.process_env([test: {:system, "process_test_var", "defaults"}])
     System.put_env("process_test_var", "other_val")

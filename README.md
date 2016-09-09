@@ -12,7 +12,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
     ```elixir
     def deps do
-      [{:confex, "~> 1.3.0"}]
+      [{:confex, "~> 1.4.0"}]
     end
     ```
 
@@ -49,8 +49,9 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
     * `{:system, :string, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`.
     * `{:system, :string, "ENV_NAME"}` - same as `{:system, "ENV_NAME"}`.
     * `{:system, :integer, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to integer if it's not `nil`. Default value type **will not** be changed.
-    * `{:system, :integer, "ENV_NAME"}` - same as `{:system, "ENV_NAME", default}`, but without default value.
-
+    * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
+    * `{:system, :boolean, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to boolean if it's not `nil`. Default value type **will not** be changed.
+    * `{:system, :boolean, "ENV_NAME"}` - same as `{:system, :boolean, "ENV_NAME", nil}`.
 
 2. Reading configuration
 

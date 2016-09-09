@@ -119,6 +119,9 @@ defmodule Confex do
   defp get_value({:system, :integer, var_name}),
    do: get_value({:system, :integer, var_name, nil})
 
+  defp get_value({:system, :boolean, var_name}),
+   do: get_value({:system, :boolean, var_name, nil})
+
   defp get_value({:system, var_name, default_value}),
    do: get_value({:system, :string, var_name, default_value})
 
@@ -139,6 +142,27 @@ defmodule Confex do
   defp cast(value, :string) do
     to_string(value)
   end
+
+  @boolean_true ["true", "1", "yes"]
+  @boolean_false ["false", "0", "no"]
+
+  defp cast(value, :boolean) when is_binary(value) do
+    dc_val = value
+    |> String.downcase
+
+    cond do
+      Enum.member?(@boolean_true, dc_val)  ->
+        true
+
+      Enum.member?(@boolean_false, dc_val) ->
+        false
+
+      # Nil for all other values
+      true ->
+        nil
+    end
+  end
+
 
   # Set default value from `get` and `get_map` methods.
   # Basically we override all nil's with defaults.
