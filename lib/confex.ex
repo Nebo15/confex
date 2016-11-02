@@ -122,6 +122,9 @@ defmodule Confex do
   defp get_value({:system, :boolean, var_name}),
    do: get_value({:system, :boolean, var_name, nil})
 
+  defp get_value({:system, :atom, var_name}),
+   do: get_value({:system, :atom, var_name, nil})
+
   defp get_value({:system, var_name, default_value}),
    do: get_value({:system, :string, var_name, default_value})
 
@@ -137,6 +140,12 @@ defmodule Confex do
   defp cast(value, :integer) do
     {int, _} = Integer.parse(value)
     int
+  end
+
+  defp cast(value, :atom) do
+    value
+    |> String.to_char_list
+    |> List.to_atom
   end
 
   defp cast(value, :string) do
