@@ -52,6 +52,10 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
     * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
     * `{:system, :boolean, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to boolean if it's not `nil`. Default value type **will not** be changed.
     * `{:system, :boolean, "ENV_NAME"}` - same as `{:system, :boolean, "ENV_NAME", nil}`.
+    * `{:system, :atom, "ENV_NAME"}`
+    * `{:system, :atom, "ENV_NAME", :default}`
+    * `{:system, :module, "ENV_NAME"}`
+    * `{:system, :module, "ENV_NAME", Default}`
 
 2. Reading configuration
 
