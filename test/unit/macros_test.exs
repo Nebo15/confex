@@ -8,7 +8,7 @@ defmodule ConfexMacrosTest do
       overriden_var: {:system, "OVER_VAR"},
       overriden_list: [list: [foo: "bar", mix: {:system, "OVER_VAR"}]]
 
-    defp validate_config(config) do
+    def validate_config(config) do
       if is_nil(config) do
         throw "Something went wrong"
       end
@@ -21,7 +21,7 @@ defmodule ConfexMacrosTest do
     use Confex,
       overriden_var: {:system, "OVER_VAR"}
 
-    defp validate_config(config) do
+    def validate_config(config) do
       if is_nil(config) do
         throw "Something went wrong #1"
       end
@@ -35,7 +35,7 @@ defmodule ConfexMacrosTest do
       quote bind_quoted: [opts: opts] do
         use Confex, opts
 
-        defp validate_config(config) do
+        def validate_config(config) do
           if is_nil(config) do
             throw "Something went wrong #2"
           end
@@ -53,7 +53,7 @@ defmodule ConfexMacrosTest do
       quote bind_quoted: [opts: opts] do
         use OtherModuleWithMacro, opts
 
-        defp validate_config(config) do
+        def validate_config(config) do
           if is_nil(config) do
             throw "Something went wrong #3"
           end

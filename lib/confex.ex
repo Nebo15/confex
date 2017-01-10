@@ -226,7 +226,7 @@ defmodule Confex do
         end
       end
 
-      defp validate_config(conf) do
+      def validate_config(conf) do
         conf
       end
 

@@ -1,12 +1,12 @@
 defmodule Confex.Mixfile do
   use Mix.Project
 
-  @version "1.4.2"
+  @version "1.4.3"
 
   def project do
     [app: :confex,
      description: "Helper module that provides a nice way to read environment configuration at runtime.",
-     package: package,
+     package: package(),
      version: @version,
      elixir: "~> 1.3",
      elixirc_paths: elixirc_paths(Mix.env),
