@@ -76,7 +76,7 @@ defmodule Confex do
     iex> [test: "defaults"] = #{__MODULE__}.process_env([test: {:system, "some_test_var", "defaults"}])
     [test: "defaults"]
   """
-  @spec process_env(Keyword.t | atom | String.t | Integer.t) :: Keyword.t
+  @spec process_env(Keyword.t | atom | String.t | Integer.t) :: term
   def process_env(conf) when is_list(conf) do
     prepare_list(conf)
   end
@@ -188,6 +188,8 @@ defmodule Confex do
   # Helper to include configs into module and validate it at compile-time/run-time
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
+      @dialyzer {:nowarn_function, add_defaults: 2}
+
       @otp_app opts
       |> Keyword.get(:otp_app)
 
