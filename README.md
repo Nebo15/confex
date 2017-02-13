@@ -62,21 +62,21 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
   Read string values:
 
     ```elixir
-    iex> confex.get(:myapp, MyKey)
+    iex> Confex.get(:myapp, MyKey)
     "abc"
     ```
 
   Read integer values:
 
     ```elixir
-    confex.get(:myapp, MyIntKey)
+    Confex.get(:myapp, MyIntKey)
     123
     ```
 
   Read map values:
 
     ```elixir
-    confex.get(:myapp, MyIntKey)
+    Confex.get(:myapp, MyIntKey)
     [a: 123, b: "abc"]
     ```
 
