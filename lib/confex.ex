@@ -109,6 +109,7 @@ defmodule Confex do
   defp get_value({:system, type, var_name, default_value}) when is_atom(type) do
     var_name
     |> System.get_env
+    |> load_from_file(var_name)
     |> cast(type)
     |> set_default(default_value)
   end
@@ -179,6 +180,36 @@ defmodule Confex do
     end
   end
 
+  defp get_file_config_directory do
+    Application.get_env(:confex, :file_config_directory, System.tmp_dir)
+    |> sanitize_path
+  end
+
+  # Handle directory paths with and without a trailing /
+  defp sanitize_path(directory_path) do
+    if :true == String.ends_with?(directory_path, "/"),
+    do: directory_path,
+    else: directory_path <> "/"
+  end
+
+
+  # If there is no environment variable for `key`, lets check our
+  # file_config_directory
+  defp load_from_file(nil, key) do
+    file_name = get_file_config_directory <> key
+
+    config = with :true <- File.exists?(file_name) do
+      {:ok, value} = File.read(file_name)
+      value
+    else
+      :false -> nil
+    end
+  end
+
+  # If there is a value for the key in System.get_env, just use it as an override
+  defp load_from_file(sys_val, key) do
+    sys_val
+  end
 
   # Set default value from `get` and `get_map` methods.
   # Basically we override all nil's with defaults.
