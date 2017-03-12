@@ -181,13 +181,12 @@ defmodule Confex do
   end
 
   defp get_file_config_directory do
-    Application.get_env(:confex, :file_config_directory, System.tmp_dir)
-    |> sanitize_path
+    sanitize_path(Application.get_env(:confex, :file_config_directory, System.tmp_dir))
   end
 
   # Handle directory paths with and without a trailing /
   defp sanitize_path(directory_path) do
-    if :true == String.ends_with?(directory_path, "/"),
+    if String.ends_with?(directory_path, "/"),
     do: directory_path,
     else: directory_path <> "/"
   end
