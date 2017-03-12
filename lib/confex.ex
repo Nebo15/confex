@@ -197,7 +197,7 @@ defmodule Confex do
   defp load_from_file(nil, key) do
     file_name = get_file_config_directory <> key
 
-    config = with :true <- File.exists?(file_name) do
+    config_value = with :true <- File.exists?(file_name) do
       {:ok, value} = File.read(file_name)
       value
     else
