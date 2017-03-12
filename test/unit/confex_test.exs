@@ -28,6 +28,52 @@ defmodule ConfexTest do
             map: %{key: {:system, "THIS_DOESNT_WORK"}}] = Confex.get_map(:confex, __MODULE__)
   end
 
+  test "loading config from files" do
+    file_key = Integer.to_string(:os.system_time(:seconds))
+    File.write("#{System.tmp_dir}/#{file_key}", "my-super-secret-value")
+
+    Application.put_env(:confex, __MODULE__, [
+      secret: {:system, file_key}
+    ])
+
+    assert [secret: "my-super-secret-value"] = Confex.get_map(:confex, __MODULE__)
+
+    File.rm(System.tmp_dir <> "/#{file_key}")
+  end
+
+  test "file_config_directory can handle paths with and without trailing /" do
+    File.mkdir("/#{System.tmp_dir}/new_dir")
+    Application.put_env(:confex, :file_config_directory, "/#{System.tmp_dir}/new_dir/")
+
+    file_key = Integer.to_string(:os.system_time(:seconds))
+    File.write("#{System.tmp_dir}/new_dir/#{file_key}", "my-super-secret-value")
+
+    Application.put_env(:confex, __MODULE__, [
+      secret: {:system, file_key}
+    ])
+
+    assert [secret: "my-super-secret-value"] = Confex.get_map(:confex, __MODULE__)
+
+    File.rmdir("#{System.tmp_dir}/new_dir")
+
+  end
+
+  test "file_config_directory can be overridden" do
+    File.mkdir("/#{System.tmp_dir}/new_dir")
+    Application.put_env(:confex, :file_config_directory, "/#{System.tmp_dir}/new_dir")
+
+    file_key = Integer.to_string(:os.system_time(:seconds))
+    File.write("/#{System.tmp_dir}/new_dir/#{file_key}", "my-super-secret-value")
+
+    Application.put_env(:confex, __MODULE__, [
+      secret: {:system, file_key}
+    ])
+
+    assert [secret: "my-super-secret-value"] = Confex.get_map(:confex, __MODULE__)
+
+    File.rmdir("/#{System.tmp_dir}/new_dir")
+  end
+
   test "sets integers" do
     Application.put_env(:confex, __MODULE__, [
        a: {:system, :integer, "TESTENV"},
