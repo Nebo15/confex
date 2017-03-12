@@ -192,7 +192,6 @@ defmodule Confex do
     else: directory_path <> "/"
   end
 
-
   # If there is no environment variable for `key`, lets check our
   # file_config_directory
   defp load_from_file(nil, key) do
