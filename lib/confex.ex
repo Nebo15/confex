@@ -128,6 +128,9 @@ defmodule Confex do
   defp get_value({:system, :module, var_name}),
    do: get_value({:system, :module, var_name, nil})
 
+  defp get_value({:system, :list, var_name}),
+   do: get_value({:system, :list, var_name, nil})
+
   defp get_value({:system, var_name, default_value}),
    do: get_value({:system, :string, var_name, default_value})
 
@@ -177,6 +180,14 @@ defmodule Confex do
       true ->
         nil
     end
+  end
+
+  @list_separator ","
+
+  defp cast(value, :list) when is_binary(value) do
+    value
+    |> String.split(@list_separator)
+    |> Enum.map(&String.trim/1)
   end
 
 
