@@ -56,6 +56,8 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
     * `{:system, :atom, "ENV_NAME", :default}`
     * `{:system, :module, "ENV_NAME"}`
     * `{:system, :module, "ENV_NAME", Default}`
+    * `{:system, :list, "ENV_NAME"}` - same as `{:system, :list, "ENV_NAME", nil}`.
+    * `{:system, :list, "ENV_NAME", Default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to list if it's not `nil`, splitting at commas. Default value type **will not** be changed.
 
 2. Reading configuration
 

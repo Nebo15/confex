@@ -145,6 +145,16 @@ defmodule ConfexTest do
     assert [a: MyModule] = Confex.get_map(:confex, __MODULE__)
   end
 
+  test "sets lists" do
+    System.put_env("TESTENV", "foo, bar, baz")
+
+    Application.put_env(:confex, __MODULE__, [
+       a: {:system, :list, "TESTENV"}
+    ])
+
+    assert [a: ["foo", "bar", "baz"]] = Confex.get_map(:confex, __MODULE__)
+  end
+
   test "walks on nested maps" do
     Application.put_env(:confex, __MODULE__, [
        a: [aa: "bar",
