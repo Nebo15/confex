@@ -1,6 +1,5 @@
 {
   "skip_files": [
-    "test/*",
-    "/lib/confex/tasks.ex"
+    "test/*"
   ]
 }
