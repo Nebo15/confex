@@ -10,19 +10,15 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
   1. Add `confex` to your list of dependencies in `mix.exs`:
 
-    ```elixir
     def deps do
       [{:confex, "~> 1.4.1"}]
     end
-    ```
 
   2. Ensure `confex` is started before your application:
 
-    ```elixir
     def application do
       [applications: [:confex]]
     end
-    ```
 
 # Usage
 
@@ -30,7 +26,6 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
   Define your configuration in config.ex of your application.
 
-    ```elixir
     config :ap_cfpredictor, AssetProcessor.AMQP.Producer,
       queue: [
         name:        {:system, "OUT_QUEUE_NAME", "MyQueueOut"},
@@ -39,58 +34,49 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
         durable:     {:system, "OUT_DURABLE", false},
         port:        {:system, :integer, "OUT_PORT", 1234},
       ],
-    ```
 
   List of supported formats:
 
-    * `var` - any bare values will be left as-is.
-    * `{:system, "ENV_NAME", default}` - read string from system ENV, return `default` if it's nil.
-    * `{:system, "ENV_NAME"}` - read string from system ENV, returns `nil` if environment variables doesn't exist.
-    * `{:system, :string, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`.
-    * `{:system, :string, "ENV_NAME"}` - same as `{:system, "ENV_NAME"}`.
-    * `{:system, :integer, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to integer if it's not `nil`. Default value type **will not** be changed.
-    * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
-    * `{:system, :boolean, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to boolean if it's not `nil`. Default value type **will not** be changed.
-    * `{:system, :boolean, "ENV_NAME"}` - same as `{:system, :boolean, "ENV_NAME", nil}`.
-    * `{:system, :atom, "ENV_NAME"}`
-    * `{:system, :atom, "ENV_NAME", :default}`
-    * `{:system, :module, "ENV_NAME"}`
-    * `{:system, :module, "ENV_NAME", Default}`
-    * `{:system, :list, "ENV_NAME"}` - same as `{:system, :list, "ENV_NAME", nil}`.
-    * `{:system, :list, "ENV_NAME", Default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to list if it's not `nil`, splitting at commas. Default value type **will not** be changed.
+  * `var` - any bare values will be left as-is.
+  * `{:system, "ENV_NAME", default}` - read string from system ENV, return `default` if it's nil.
+  * `{:system, "ENV_NAME"}` - read string from system ENV, returns `nil` if environment variables doesn't exist.
+  * `{:system, :string, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`.
+  * `{:system, :string, "ENV_NAME"}` - same as `{:system, "ENV_NAME"}`.
+  * `{:system, :integer, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to integer if it's not `nil`. Default value type **will not** be changed.
+  * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
+  * `{:system, :boolean, "ENV_NAME", default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to boolean if it's not `nil`. Default value type **will not** be changed.
+  * `{:system, :boolean, "ENV_NAME"}` - same as `{:system, :boolean, "ENV_NAME", nil}`.
+  * `{:system, :atom, "ENV_NAME"}`
+  * `{:system, :atom, "ENV_NAME", :default}`
+  * `{:system, :module, "ENV_NAME"}`
+  * `{:system, :module, "ENV_NAME", Default}`
+  * `{:system, :list, "ENV_NAME"}` - same as `{:system, :list, "ENV_NAME", nil}`.
+  * `{:system, :list, "ENV_NAME", Default}` - same as `{:system, "ENV_NAME", default}`, but will convert value to list if it's not `nil`, splitting at commas. Default value type **will not** be changed.
 
 2. Reading configuration
 
   Read string values:
 
-    ```elixir
     iex> Confex.get(:myapp, MyKey)
     "abc"
-    ```
 
   Read integer values:
 
-    ```elixir
     Confex.get(:myapp, MyIntKey)
     123
-    ```
 
   Read map values:
 
-    ```elixir
     Confex.get(:myapp, MyIntKey)
     [a: 123, b: "abc"]
-    ```
 
 3. Using macros
 
   Confex is supplied with helper macros that allow to attach configuration to specific modules of your application.
 
-    ```
     defmodule Connection do
       use Confex, otp_app: :myapp
     end
-    ```
 
   `Connection` in this case will read configuration from app `:myapp` with key `Connection`. Also it will provide helper function `config/0` that will return values at run-time.
 
@@ -106,19 +92,15 @@ By using Confex macro in your module, you allow to provide compile-time defaults
 
   1. Declare module
 
-    ```elixir
     defmodule MyModule do
       use Confex
     end
-    ```
 
   2. Provide defaults when using it
 
-    ```elixir
     use MyModule,
       otp_all: :myapp,
       host: {:system, "HOST"}
-    ```
 
   This configs will overwritten by any configuration that you have in your application env.
 
