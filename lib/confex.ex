@@ -42,22 +42,22 @@ defmodule Confex do
 
   ## Example
 
-    iex> {test_var, expected_value} = System.get_env |> Enum.take(1) |> List.first
-    ...> Application.put_env(:myapp, :test_var, [test: {:system, test_var}])
-    ...> [test: ^expected_value] = #{__MODULE__}.get_map(:myapp, :test_var)
-    ...> :ok
-    :ok
+      iex> {test_var, expected_value} = System.get_env |> Enum.take(1) |> List.first
+      ...> Application.put_env(:myapp, :test_var, [test: {:system, test_var}])
+      ...> [test: ^expected_value] = #{__MODULE__}.get_map(:myapp, :test_var)
+      ...> :ok
+      :ok
 
-    iex> Application.put_env(:myapp, :test_var2, [test: 1])
-    ...> #{__MODULE__}.get_map(:myapp, :test_var2)
-    [test: 1]
+      iex> Application.put_env(:myapp, :test_var2, [test: 1])
+      ...> #{__MODULE__}.get_map(:myapp, :test_var2)
+      [test: 1]
 
-    iex> :default = #{__MODULE__}.get_map(:myapp, :other_missing_var, :default)
-    :default
+      iex> :default = #{__MODULE__}.get_map(:myapp, :other_missing_var, :default)
+      :default
 
-    iex> Application.put_env(:myapp, :test_var3, [test: nil])
-    ...> [test: nil] = #{__MODULE__}.get_map(:myapp, :test_var3)
-    [test: nil]
+      iex> Application.put_env(:myapp, :test_var3, [test: nil])
+      ...> [test: nil] = #{__MODULE__}.get_map(:myapp, :test_var3)
+      [test: nil]
   """
   @spec get_map(atom, atom, term | nil) :: Keyword.t
   def get_map(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
@@ -73,8 +73,8 @@ defmodule Confex do
 
   # Example
 
-    iex> [test: "defaults"] = #{__MODULE__}.process_env([test: {:system, "some_test_var", "defaults"}])
-    [test: "defaults"]
+      iex> [test: "defaults"] = #{__MODULE__}.process_env([test: {:system, "some_test_var", "defaults"}])
+      [test: "defaults"]
   """
   @spec process_env(Keyword.t | atom | String.t | Integer.t) :: term
   def process_env(conf) when is_list(conf) do
