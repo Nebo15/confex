@@ -67,7 +67,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
   Read map values:
 
-    Confex.get(:myapp, MyIntKey)
+    Confex.get_map(:myapp, MyIntKey)
     [a: 123, b: "abc"]
 
 3. Using macros
