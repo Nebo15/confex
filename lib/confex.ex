@@ -33,7 +33,7 @@ defmodule Confex do
   def get(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
     app
     |> Application.get_env(key)
-    |> get_value
+    |> get_value()
     |> set_default(default)
   end
 
@@ -63,7 +63,7 @@ defmodule Confex do
   def get_map(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
     app
     |> Application.get_env(key)
-    |> prepare_list
+    |> prepare_list()
     |> set_default(default)
   end
 
@@ -77,39 +77,35 @@ defmodule Confex do
       [test: "defaults"]
   """
   @spec process_env(Keyword.t | atom | String.t | Integer.t) :: term
-  def process_env(conf) when is_list(conf) do
-    prepare_list(conf)
-  end
+  def process_env(conf) when is_list(conf),
+    do: prepare_list(conf)
 
-  def process_env(conf) do
-    get_value(conf)
-  end
+  def process_env(conf),
+    do: get_value(conf)
 
   # Helpers to work with map values
   defp prepare_list(map, converter \\ &get_value/1)
-  defp prepare_list(nil, _converter), do: nil
-  defp prepare_list(map, converter) do
-    map
-    |> Enum.map(&prepare_list_element(&1, converter))
-  end
 
-  defp prepare_list_element({key, value}, converter) when is_list(value) and key != :system do
-    {key, prepare_list(value, converter)}
-  end
+  defp prepare_list(nil, _converter),
+    do: nil
 
-  defp prepare_list_element({key, value}, converter) when key != :system do
-    {key, converter.(value)}
-  end
+  defp prepare_list(map, converter),
+    do: Enum.map(map, &prepare_list_element(&1, converter))
 
-  defp prepare_list_element(value, _converter) do
-    get_value(value)
-  end
+  defp prepare_list_element({key, value}, converter) when is_list(value) and key != :system,
+    do: {key, prepare_list(value, converter)}
+
+  defp prepare_list_element({key, value}, converter) when key != :system,
+    do: {key, converter.(value)}
+
+  defp prepare_list_element(value, _converter),
+    do: get_value(value)
 
   # Helpers to parse value from supported definition tuples
   defp get_value({:system, type, var_name, default_value}) when is_atom(type) do
     var_name
     |> System.get_env
-    |> cast(type)
+    |> cast(type, var_name)
     |> set_default(default_value)
   end
 
@@ -141,33 +137,38 @@ defmodule Confex do
    do: val
 
   # Helpers to cast value to correct type
-  defp cast(nil, _), do: nil
+  defp cast(nil, _, var_name),
+    do: nil
 
-  defp cast(value, :integer) do
-    {int, _} = Integer.parse(value)
-    int
+  defp cast(value, :integer, var_name) do
+    case Integer.parse(value) do
+      {int, _} ->
+        int
+      :error ->
+        raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as integer. " <>
+                             "Got value: #{inspect value}"
+    end
   end
 
-  defp cast(value, :atom) do
+  defp cast(value, :atom, _var_name) do
     value
-    |> String.to_char_list
-    |> List.to_atom
+    |> String.to_char_list()
+    |> List.to_atom()
   end
 
-  defp cast(value, :module) do
+  defp cast(value, :module, _var_name) do
     Module.concat([value])
   end
 
-  defp cast(value, :string) do
+  defp cast(value, :string, _var_name) do
     to_string(value)
   end
 
   @boolean_true ["true", "1", "yes"]
   @boolean_false ["false", "0", "no"]
 
-  defp cast(value, :boolean) when is_binary(value) do
-    dc_val = value
-    |> String.downcase
+  defp cast(value, :boolean, var_name) when is_binary(value) do
+    dc_val = String.downcase(value)
 
     cond do
       Enum.member?(@boolean_true, dc_val)  ->
@@ -176,15 +177,16 @@ defmodule Confex do
       Enum.member?(@boolean_false, dc_val) ->
         false
 
-      # Nil for all other values
       true ->
-        nil
+        raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as boolean. " <>
+                             "Expected 'true', 'false', '1', '0', 'yes' or 'no', got: #{inspect value}"
+
     end
   end
 
   @list_separator ","
 
-  defp cast(value, :list) when is_binary(value) do
+  defp cast(value, :list, _var_name) when is_binary(value) do
     value
     |> String.split(@list_separator)
     |> Enum.map(&String.trim/1)
@@ -197,16 +199,17 @@ defmodule Confex do
   defp set_default(val, _), do: val
 
   # Helper to include configs into module and validate it at compile-time/run-time
+  @doc false
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @dialyzer {:nowarn_function, add_defaults: 2}
+      @otp_app Keyword.get(opts, :otp_app)
+      @module_config_overrides Keyword.delete(opts, :otp_app)
 
-      @otp_app opts
-      |> Keyword.get(:otp_app)
-
-      @module_config_overrides opts
-      |> Keyword.delete(:otp_app)
-
+      @spec config() :: Map.t
+      @doc """
+      Returns module configuration.
+      """
       def config do
         @otp_app
         |> Confex.get_map(__MODULE__)
@@ -214,15 +217,11 @@ defmodule Confex do
         |> validate_config
       end
 
-      defp add_defaults(conf, nil) do
-        conf
-        |> Confex.process_env
-      end
+      defp add_defaults(conf, nil),
+        do: Confex.process_env(conf)
 
-      defp add_defaults(nil, defaults) do
-        defaults
-        |> Confex.process_env
-      end
+      defp add_defaults(nil, defaults),
+        do: Confex.process_env(defaults)
 
       defp add_defaults(conf, defaults) do
         defaults
@@ -239,9 +238,9 @@ defmodule Confex do
         end
       end
 
-      def validate_config(conf) do
-        conf
-      end
+      @spec validate_config(config :: Map.t) :: Map.t
+      def validate_config(conf),
+        do: conf
 
       defoverridable [validate_config: 1]
     end

@@ -95,13 +95,17 @@ defmodule ConfexTest do
 
     System.put_env("TESTENV", "hola")
 
-    assert [a: nil,
-            b: true] = Confex.get_map(:confex, __MODULE__)
+    assert_raise ArgumentError, ~S/Environment variable "TESTENV" can not be parsed as boolean. / <>
+                                ~S/Expected 'true', 'false', '1', '0', 'yes' or 'no', got: "hola"/, fn ->
+      Confex.get_map(:confex, __MODULE__)
+    end
 
     System.put_env("TESTENV", "como_estas?")
 
-    assert [a: nil,
-            b: true] = Confex.get_map(:confex, __MODULE__)
+    assert_raise ArgumentError, fn ->
+      assert [a: nil,
+              b: true] = Confex.get_map(:confex, __MODULE__)
+    end
   end
 
   test "sets strings" do
