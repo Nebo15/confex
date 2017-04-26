@@ -41,6 +41,13 @@ defmodule ConfexTest do
 
     assert [a: 600,
             b: 600] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "abba")
+
+    assert_raise ArgumentError, ~S/Environment variable "TESTENV" can not be parsed as integer. / <>
+                                ~S/Got value: "abba"/, fn ->
+      Confex.get_map(:confex, __MODULE__)
+    end
   end
 
   test "sets booleans" do
