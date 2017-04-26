@@ -86,6 +86,81 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
   Confex doesn't give opinions on a validator to be used in overrided methods.
 
+## Integrating with Ecto
+
+Ecto has a `init/2` callback, you can use it with Confex to read environment variables. We used to have all our repos to look like this:
+
+```elixir
+defmodule MyApp do
+  use Ecto.Repo, otp_app: :my_app
+
+  @doc """
+  Dynamically loads the repository configuration from the environment variables.
+  """
+  def init(_, config) do
+    url = System.get_env("DATABASE_URL")
+    config = if url, do: Ecto.Repo.Supervisor.parse_url(url), else: Confex.process_env(config)
+
+    unless config[:database] do
+      raise "Set DB_NAME environment variable!"
+    end
+
+    unless config[:username] do
+      raise "Set DB_USER environment variable!"
+    end
+
+    unless config[:password] do
+      raise "Set DB_PASSWORD environment variable!"
+    end
+
+    unless config[:hostname] do
+      raise "Set DB_HOST environment variable!"
+    end
+
+    unless config[:port] do
+      raise "Set DB_PORT environment variable!"
+    end
+
+    {:ok, config}
+  end
+end
+```
+
+## Integrating with Phoenix
+
+1. Set `on_init` callback in your `prod.exs`:
+
+    ```elixir
+    config :my_app, MyApp.Web.Endpoint,
+      on_init: {MyApp.Web.Endpoint, :load_from_system_env, []}
+    ```
+
+2. Add `load_from_system_env` function to your endpoint:
+
+    ```elixir
+    defmodule Mithril.Web.Endpoint do
+
+      # Some code here
+
+      @doc """
+      Dynamically loads configuration from the system environment
+      on startup.
+
+      It receives the endpoint configuration from the config files
+      and must return the updated configuration.
+      """
+      def load_from_system_env(config) do
+        config = Confex.process_env(config)
+
+        unless config[:secret_key_base] do
+          raise "Set SECRET_KEY environment variable!"
+        end
+
+        {:ok, config}
+      end
+    end
+    ```
+
 # Configuration priorities
 
 By using Confex macro in your module, you allow to provide compile-time defaults for it.
