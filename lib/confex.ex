@@ -206,10 +206,10 @@ defmodule Confex do
       @otp_app Keyword.get(opts, :otp_app)
       @module_config_overrides Keyword.delete(opts, :otp_app)
 
-      @spec config() :: Map.t
       @doc """
       Returns module configuration.
       """
+      @spec config() :: Map.t
       def config do
         @otp_app
         |> Confex.get_map(__MODULE__)
