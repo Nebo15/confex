@@ -137,7 +137,7 @@ defmodule Confex do
    do: val
 
   # Helpers to cast value to correct type
-  defp cast(nil, _, var_name),
+  defp cast(nil, _, _var_name),
     do: nil
 
   defp cast(value, :integer, var_name) do
