@@ -192,7 +192,6 @@ defmodule Confex do
     |> Enum.map(&String.trim/1)
   end
 
-
   # Set default value from `get` and `get_map` methods.
   # Basically we override all nil's with defaults.
   defp set_default(nil, default), do: default
