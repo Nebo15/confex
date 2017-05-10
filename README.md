@@ -100,7 +100,7 @@ defmodule MyApp do
   def init(_, config) do
     url = System.get_env("DATABASE_URL")
     config = if url,
-      do: Keyword.merge(config, Ecto.Repo.Supervisor.parse_url(url)),
+        do: Keyword.merge(config, Ecto.Repo.Supervisor.parse_url(url)),
       else: Confex.process_env(config)
 
     unless config[:database] do
