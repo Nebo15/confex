@@ -50,6 +50,28 @@ defmodule ConfexTest do
     end
   end
 
+  test "sets floats" do
+    Application.put_env(:confex, __MODULE__, [
+       a: {:system, :float, "TESTENV"},
+       b: {:system, :float, "TESTENV", 0.25},
+    ])
+
+    assert [a: nil,
+            b: 0.25] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "0.75")
+
+    assert [a: 0.75,
+            b: 0.75] = Confex.get_map(:confex, __MODULE__)
+
+    System.put_env("TESTENV", "abba")
+
+    assert_raise ArgumentError, ~S/Environment variable "TESTENV" can not be parsed as float. / <>
+                                ~S/Got value: "abba"/, fn ->
+      Confex.get_map(:confex, __MODULE__)
+    end
+  end
+
   test "sets booleans" do
     Application.put_env(:confex, __MODULE__, [
        a: {:system, :boolean, "TESTENV"},

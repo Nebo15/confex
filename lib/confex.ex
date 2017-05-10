@@ -115,6 +115,9 @@ defmodule Confex do
   defp get_value({:system, :integer, var_name}),
    do: get_value({:system, :integer, var_name, nil})
 
+  defp get_value({:system, :float, var_name}),
+   do: get_value({:system, :float, var_name, nil})
+
   defp get_value({:system, :boolean, var_name}),
    do: get_value({:system, :boolean, var_name, nil})
 
@@ -146,6 +149,16 @@ defmodule Confex do
         int
       :error ->
         raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as integer. " <>
+                             "Got value: #{inspect value}"
+    end
+  end
+
+  defp cast(value, :float, var_name) do
+    case Float.parse(value) do
+      {int, _} ->
+        int
+      :error ->
+        raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as float. " <>
                              "Got value: #{inspect value}"
     end
   end
