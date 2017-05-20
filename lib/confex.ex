@@ -38,7 +38,7 @@ defmodule Confex do
   end
 
   @doc """
-  Same as `get/3`, but when you has map.
+  Same as `get/3`, but when you have a map.
 
   ## Example
 
