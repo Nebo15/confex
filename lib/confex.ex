@@ -1,260 +1,270 @@
 defmodule Confex do
   @moduledoc """
-  This is helper module that provides a nice way to read environment configuration at runtime.
+  Confex simplifies reading configuration at run-time with adapter-based system for resolvers.
+
+  # Configuration tuples
+
+  Whenever there is a configuration that should be resolved at run-time you need to replace it's value in `config.exs`
+  by Confex configuration type. Common structure:
+
+    ```elixir
+    @type fetch_statement :: {adapter :: atom() | module(), value_type :: value_type, key :: String.t, default :: any()}
+                           | {value_type :: value_type, key :: String.t}
+                           | {key :: String.t, default :: any()}
+                           | {key :: String.t}
+    ```
+
+  If `value_type` is set, Confex will automatically cast it's value. Otherwise, default type of `:string` is used.
+
+  | Confex Type | Elixir Type       | Description |
+  | ----------- | ----------------- | ----------- |
+  | `:string`   | `String.t`        | Default.    |
+  | `:integer`  | `Integer.t`       | Parse Integer value in string or raise. |
+  | `:float`    | `Float.t`         | Parse Float value in string or raise. |
+  | `:boolean`  | `true` or `false` | Cast 'true', '1', 'yes' to `true`; 'false', '0', 'no' to `false` or raise. |
+  | `:atom`     | `atom()`          | Cast string to atom. |
+  | `:module`   | `module()`        | Cast string to module name. |
+  | `:list`     | `List.t`          | Cast comma-separated string (`1,2,3`) to list (`[1, 2, 3]`). |
+
+  Examples:
+
+    * `var` - any bare values will be left as-is.
+    * `{:system, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable or return `default` \
+    if it's not set or has empty value.
+    * `{:system, "ENV_NAME"}` - same as above, with default value `nil`.
+    * `{:system, :integer, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable and cast it \
+    to integer or return `default` if it's not set or has empty value.
+    * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
+    * `{MyAdapter, :string, "ENV_NAME", default}` - read value by key "ENV_NAME" via adapter `MyAdapter` or return \
+    `default` if it's not set or has empty value.
+    * `{MyAdapter, :string, "ENV_NAME"}` - same as above, with default value `nil`.
+
+  # Adapters
+
+  By-default, you can use `:system` adapter to read configuration from system environment variables.
+
+  You can extend it by implementing `Confex.Adapter` behaviour with your own logic.
   """
+  alias Confex.Resolver
+
+  @type configuration_tuple :: {value_type :: Confex.Type.t, key :: String.t, default :: any()}
+                             | {value_type :: Confex.Type.t, key :: String.t}
+                             | {key :: String.t, default :: any()}
+                             | {key :: String.t}
 
   @doc """
-  Fetches a value from the config, or from the environment if {:system, "VAR"} is provided.
-  An optional default value and it's type can be provided if desired.
+  Returns the value for key in app’s environment in a tuple.
+  This function mimics `Application.fetch_env/2` function.
 
-  ## Example
-
-      iex> {test_var, expected_value} = System.get_env |> Enum.take(1) |> List.first
-      ...> Application.put_env(:myapp, :test_var, {:system, test_var})
-      ...> ^expected_value = #{__MODULE__}.get(:myapp, :test_var)
-      ...> :ok
-      :ok
-
-      iex> Application.put_env(:myapp, :test_var2, 1)
-      ...> 1 = #{__MODULE__}.get(:myapp, :test_var2)
-      1
-
-      iex> System.delete_env("TEST_ENV")
-      ...> Application.put_env(:myapp, :test_var2, {:system, :integer, "TEST_ENV", "default_value"})
-      ...> "default_value" = #{__MODULE__}.get(:myapp, :test_var2)
-      ...> System.put_env("TEST_ENV", "123")
-      ...> 123 = #{__MODULE__}.get(:myapp, :test_var2)
-      123
-
-      iex> :default = #{__MODULE__}.get(:myapp, :missing_var, :default)
-      :default
-  """
-  @spec get(atom, atom, term | nil) :: term
-  def get(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
-    app
-    |> Application.get_env(key)
-    |> get_value()
-    |> set_default(default)
-  end
-
-  @doc """
-  Same as `get/3`, but when you have a map.
-
-  ## Example
-
-      iex> {test_var, expected_value} = System.get_env |> Enum.take(1) |> List.first
-      ...> Application.put_env(:myapp, :test_var, [test: {:system, test_var}])
-      ...> [test: ^expected_value] = #{__MODULE__}.get_map(:myapp, :test_var)
-      ...> :ok
-      :ok
-
-      iex> Application.put_env(:myapp, :test_var2, [test: 1])
-      ...> #{__MODULE__}.get_map(:myapp, :test_var2)
-      [test: 1]
-
-      iex> :default = #{__MODULE__}.get_map(:myapp, :other_missing_var, :default)
-      :default
-
-      iex> Application.put_env(:myapp, :test_var3, [test: nil])
-      ...> [test: nil] = #{__MODULE__}.get_map(:myapp, :test_var3)
-      [test: nil]
-  """
-  @spec get_map(atom, atom, term | nil) :: Keyword.t
-  def get_map(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
-    app
-    |> Application.get_env(key)
-    |> prepare_list()
-    |> set_default(default)
-  end
-
-  @doc """
-  Receives Keyword list with Confex tuples and replaces them with an environment values.
-  Useful when you want to store configs not in `config.exs`.
+  If the configuration parameter does not exist or can not be parsed, the function returns :error.
 
   # Example
 
-      iex> [test: "defaults"] = #{__MODULE__}.process_env([test: {:system, "some_test_var", "defaults"}])
-      [test: "defaults"]
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
+      ...> {:ok, "foo"} = #{__MODULE__}.fetch_env(:myapp, :test_var)
+      {:ok, "foo"}
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV", "bar"})
+      ...> {:ok, "bar"} = #{__MODULE__}.fetch_env(:myapp, :test_var)
+      {:ok, "bar"}
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> :error = #{__MODULE__}.fetch_env(:myapp, :test_var)
+      :error
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> :error = #{__MODULE__}.fetch_env(:myapp, :test_var)
+      :error
+
+      iex> Application.put_env(:myapp, :test_var, 1)
+      ...> {:ok, 1} = #{__MODULE__}.fetch_env(:myapp, :test_var)
+      {:ok, 1}
   """
-  @spec process_env(Keyword.t | atom | String.t | Integer.t) :: term
-  def process_env(conf) when is_list(conf),
-    do: prepare_list(conf)
-
-  def process_env(conf),
-    do: get_value(conf)
-
-  # Helpers to work with map values
-  defp prepare_list(map, converter \\ &get_value/1)
-
-  defp prepare_list(nil, _converter),
-    do: nil
-
-  defp prepare_list(map, converter),
-    do: Enum.map(map, &prepare_list_element(&1, converter))
-
-  defp prepare_list_element({key, value}, converter) when is_list(value) and key != :system,
-    do: {key, prepare_list(value, converter)}
-
-  defp prepare_list_element({key, value}, converter) when key != :system,
-    do: {key, converter.(value)}
-
-  defp prepare_list_element(value, _converter),
-    do: get_value(value)
-
-  # Helpers to parse value from supported definition tuples
-  defp get_value({:system, type, var_name, default_value}) when is_atom(type) do
-    var_name
-    |> System.get_env
-    |> cast(type, var_name)
-    |> set_default(default_value)
-  end
-
-  defp get_value({:system, :string,  var_name}),
-   do: get_value({:system, :string,  var_name, nil})
-
-  defp get_value({:system, :integer, var_name}),
-   do: get_value({:system, :integer, var_name, nil})
-
-  defp get_value({:system, :float, var_name}),
-   do: get_value({:system, :float, var_name, nil})
-
-  defp get_value({:system, :boolean, var_name}),
-   do: get_value({:system, :boolean, var_name, nil})
-
-  defp get_value({:system, :atom, var_name}),
-   do: get_value({:system, :atom, var_name, nil})
-
-  defp get_value({:system, :module, var_name}),
-   do: get_value({:system, :module, var_name, nil})
-
-  defp get_value({:system, :list, var_name}),
-   do: get_value({:system, :list, var_name, nil})
-
-  defp get_value({:system, var_name, default_value}),
-   do: get_value({:system, :string, var_name, default_value})
-
-  defp get_value({:system, var_name}),
-   do: get_value({:system, :string, var_name, nil})
-
-  defp get_value(val),
-   do: val
-
-  # Helpers to cast value to correct type
-  defp cast(nil, _, _var_name),
-    do: nil
-
-  defp cast(value, :integer, var_name) do
-    case Integer.parse(value) do
-      {int, _} ->
-        int
-      :error ->
-        raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as integer. " <>
-                             "Got value: #{inspect value}"
+  @spec fetch_env(app :: Application.app(), key :: Application.key()) :: {:ok, Application.value()} | :error
+  def fetch_env(app, key) do
+    with {:ok, config} <- Application.fetch_env(app, key),
+         {:ok, config} <- Resolver.resolve(config) do
+      {:ok, config}
+    else
+      :error -> :error
+      {:error, _reason} -> :error
     end
   end
 
-  defp cast(value, :float, var_name) do
-    case Float.parse(value) do
-      {int, _} ->
-        int
-      :error ->
-        raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as float. " <>
-                             "Got value: #{inspect value}"
+  @doc """
+  Returns the value for key in app’s environment.
+  This function mimics `Application.fetch_env!/2` function.
+
+  If the configuration parameter does not exist or can not be parsed, raises `ArgumentError`.
+
+    # Example
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
+      ...> "foo" = #{__MODULE__}.fetch_env!(:myapp, :test_var)
+      "foo"
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV", "bar"})
+      ...> "bar" = #{__MODULE__}.fetch_env!(:myapp, :test_var)
+      "bar"
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> #{__MODULE__}.fetch_env!(:myapp, :test_var)
+      ** (ArgumentError) can't fetch value for application :myapp, \
+can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemEnvironment
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> #{__MODULE__}.fetch_env!(:myapp, :test_var)
+      ** (ArgumentError) can't fetch value for application :myapp, can not cast "foo" to Integer
+
+      iex> Application.put_env(:myapp, :test_var, 1)
+      ...> 1 = #{__MODULE__}.fetch_env!(:myapp, :test_var)
+      1
+  """
+  @spec fetch_env!(app :: Application.app(), key :: Application.key()) :: Application.value() | no_return
+  def fetch_env!(app, key) do
+    config = Application.fetch_env!(app, key)
+    case Resolver.resolve(config) do
+      {:ok, config} ->
+        config
+      {:error, {_reason, message}} ->
+        raise ArgumentError, "can't fetch value for application #{inspect app}, #{message}"
     end
   end
 
-  defp cast(value, :atom, _var_name) do
-    value
-    |> String.to_char_list()
-    |> List.to_atom()
+  @doc """
+  Returns the value for key in app’s environment in a tuple.
+  This function mimics `Application.get_env/2` function.
+
+  If the configuration parameter does not exist or can not be parsed, returns default value or `nil`.
+
+  # Example
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
+      ...> "foo" = #{__MODULE__}.get_env(:myapp, :test_var)
+      "foo"
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV", "bar"})
+      ...> "bar" = #{__MODULE__}.get_env(:myapp, :test_var)
+      "bar"
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> nil = #{__MODULE__}.get_env(:myapp, :test_var)
+      nil
+
+      iex> :ok = System.delete_env("MY_TEST_ENV")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> "baz" = #{__MODULE__}.get_env(:myapp, :test_var, "baz")
+      "baz"
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> nil = #{__MODULE__}.get_env(:myapp, :test_var)
+      nil
+
+      iex> nil = #{__MODULE__}.get_env(:myapp, :does_not_exist)
+      nil
+
+      iex> Application.put_env(:myapp, :test_var, 1)
+      ...> 1 = #{__MODULE__}.get_env(:myapp, :test_var)
+      1
+  """
+  @spec get_env(app :: Application.app(), key :: Application.key()) :: {:ok, Application.value()} | {:error, any()}
+  def get_env(app, key, default \\ nil) do
+    with {:ok, config} <- Application.fetch_env(app, key),
+         {:ok, config} <- Resolver.resolve(config) do
+      config
+    else
+      :error -> default
+      {:error, _reason} -> default
+    end
   end
 
-  defp cast(value, :module, _var_name) do
-    Module.concat([value])
-  end
+  @doc """
+  Recursively merges configuration with default values.
 
-  defp cast(value, :string, _var_name) do
-    to_string(value)
-  end
+  Both values must be either in `Keyword` or `Map` structures, otherwise ArtumentError is raised.
 
-  @boolean_true ["true", "1", "yes"]
-  @boolean_false ["false", "0", "no"]
+      iex> [b: 3, a: 1] = #{__MODULE__}.merge_configs!([a: 1], [a: 2, b: 3])
+      [b: 3, a: 1]
 
-  defp cast(value, :boolean, var_name) when is_binary(value) do
-    dc_val = String.downcase(value)
+      iex> %{a: 1, b: 3} = #{__MODULE__}.merge_configs!(%{a: 1}, %{a: 2, b: 3})
+      %{a: 1, b: 3}
 
+      iex> #{__MODULE__}.merge_configs!(%{a: 1}, [b: 2])
+      ** (ArgumentError) can not merge default values [b: 2] with configuration %{a: 1} because their types mismatch, \
+expected both to be either Map or Keyword structures
+  """
+  @spec merge_configs!(config :: Keyword.t | Map.t, defaults :: Keyword.t | Map.t) :: Keyword.t | Map.t
+  def merge_configs!(config, []),
+    do: config
+  def merge_configs!(nil, defaults),
+    do: defaults
+  def merge_configs!(config, defaults) do
     cond do
-      Enum.member?(@boolean_true, dc_val)  ->
-        true
+      Keyword.keyword?(config) and Keyword.keyword?(defaults) ->
+        defaults
+        |> Keyword.merge(config, &compare/3)
+        |> Resolver.resolve!()
 
-      Enum.member?(@boolean_false, dc_val) ->
-        false
+      is_map(config) and is_map(defaults) ->
+        defaults
+        |> Map.merge(config, &compare/3)
+        |> Resolver.resolve!()
 
       true ->
-        raise ArgumentError, "Environment variable #{inspect var_name} can not be parsed as boolean. " <>
-                             "Expected 'true', 'false', '1', '0', 'yes' or 'no', got: #{inspect value}"
-
+        raise ArgumentError,
+          "can not merge default values #{inspect defaults} " <>
+          "with configuration #{inspect config} because their types mismatch, " <>
+          "expected both to be either Map or Keyword structures"
     end
   end
 
-  @list_separator ","
-
-  defp cast(value, :list, _var_name) when is_binary(value) do
-    value
-    |> String.split(@list_separator)
-    |> Enum.map(&String.trim/1)
+  defp compare(_k, v1, v2) do
+    if is_map(v2) or Keyword.keyword?(v2),
+      do: merge_configs!(v1, v2),
+    else: v2
   end
 
-  # Set default value from `get` and `get_map` methods.
-  # Basically we override all nil's with defaults.
-  defp set_default(nil, default), do: default
-  defp set_default(val, _), do: val
-
-  # Helper to include configs into module and validate it at compile-time/run-time
+  # Helper to include configuration into module and validate it at compile-time/run-time.
   @doc false
   defmacro __using__(opts) do
-    quote bind_quoted: [opts: opts] do
-      @dialyzer {:nowarn_function, add_defaults: 2}
-      @otp_app Keyword.get(opts, :otp_app)
-      @module_config_overrides Keyword.delete(opts, :otp_app)
+    quote bind_quoted: [opts: opts], location: :keep do
+      @otp_app Keyword.fetch!(opts, :otp_app)
+      @module_config_defaults Keyword.delete(opts, :otp_app)
 
       @doc """
       Returns module configuration.
+
+      If application environment contains values in `Keyword` or `Map` struct,
+      defaults from macro usage will be recursively merged with application configuration.
+
+      If one of the configuration parameters does not exist or can not be resolved, raises `ArgumentError`.
       """
-      @spec config() :: Map.t
+      @spec config() :: any()
       def config do
         @otp_app
-        |> Confex.get_map(__MODULE__)
-        |> add_defaults(@module_config_overrides)
-        |> validate_config
+        |> Confex.get_env(__MODULE__)
+        |> Confex.merge_configs!(@module_config_defaults)
+        |> Confex.Resolver.resolve!()
+        |> validate_config!()
       end
 
-      defp add_defaults(conf, nil),
-        do: Confex.process_env(conf)
+      @spec validate_config!(config :: any()) :: any()
+      def validate_config!(config),
+        do: config
 
-      defp add_defaults(nil, defaults),
-        do: Confex.process_env(defaults)
-
-      defp add_defaults(conf, defaults) do
-        defaults
-        |> Keyword.merge(conf, &merge_recursive/3)
-        |> Confex.process_env
-      end
-
-      defp merge_recursive(_k, v1, v2) do
-        case is_list(v2) do
-          true ->
-            Keyword.merge(v1, v2, &merge_recursive/3)
-          false ->
-            v2
-        end
-      end
-
-      @spec validate_config(config :: Map.t) :: Map.t
-      def validate_config(conf),
-        do: conf
-
-      defoverridable [validate_config: 1]
+      defoverridable [validate_config!: 1]
     end
   end
 end
