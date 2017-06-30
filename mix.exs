@@ -44,10 +44,10 @@ defmodule Confex.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:ex_doc, ">= 0.0.0",      only: [:dev, :test]},
-     {:excoveralls, ">= 0.5.0", only: [:dev, :test]},
+    [{:ex_doc, ">= 0.16.0",     only: [:dev, :test]},
+     {:excoveralls, ">= 0.7.0", only: [:dev, :test]},
      {:dogma, "> 0.1.0",        only: [:dev, :test]},
-     {:credo, ">= 0.4.8",       only: [:dev, :test]}]
+     {:credo, ">= 0.8.0",       only: [:dev, :test]}]
   end
 
   defp description do
