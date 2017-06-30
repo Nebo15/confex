@@ -58,7 +58,6 @@ defmodule Confex.Type do
 
     {:ok, result}
   end
-
   def cast(value, :boolean) do
     downcased_value = String.downcase(value)
 
