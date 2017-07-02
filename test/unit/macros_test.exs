@@ -1,14 +1,14 @@
 defmodule ConfexMacrosTest do
   use ExUnit.Case
-  doctest Confex
 
   defmodule TestModule do
     use Confex,
       otp_app: :confex,
-      overriden_var: {:system, "OVER_VAR"},
-      overriden_list: [list: [foo: "bar", mix: {:system, "OVER_VAR"}]]
+      overriden_var: {:system, "TESTENV_REQ"},
+      overriden_keyword: [list: [foo: "foo", mix: {:system, "TESTENV", "default mix"}]],
+      overriden_map: %{list: %{foo: "foo", mix: {:system, "TESTENV", "default mix"}}}
 
-    def validate_config(config) do
+    def validate_config!(config) do
       if is_nil(config) do
         throw "Something went wrong"
       end
@@ -17,25 +17,16 @@ defmodule ConfexMacrosTest do
     end
   end
 
-  defmodule TestModuleWithoutOTP do
-    use Confex,
-      overriden_var: {:system, "OVER_VAR"}
-
-    def validate_config(config) do
-      if is_nil(config) do
-        throw "Something went wrong #1"
-      end
-
-      config
-    end
+  defmodule TestModuleWithoutDefaults do
+    use Confex, otp_app: :confex
   end
 
-  defmodule OtherModuleWithMacro do
+  defmodule TestModuleWithMarco do
     defmacro __using__(opts) do
       quote bind_quoted: [opts: opts] do
         use Confex, opts
 
-        def validate_config(config) do
+        def validate_config!(config) do
           if is_nil(config) do
             throw "Something went wrong #2"
           end
@@ -43,95 +34,84 @@ defmodule ConfexMacrosTest do
           config
         end
 
-        defoverridable [validate_config: 1]
-      end
-    end
-  end
-
-  defmodule OtherModuleWithMacro2 do
-    defmacro __using__(opts) do
-      quote bind_quoted: [opts: opts] do
-        use OtherModuleWithMacro, opts
-
-        def validate_config(config) do
-          if is_nil(config) do
-            throw "Something went wrong #3"
-          end
-
-          config
-        end
+        defoverridable [validate_config!: 1]
       end
     end
   end
 
   defmodule TestModuleFromMacro do
-    use OtherModuleWithMacro2,
-      some_var: "val"
+    use TestModuleWithMarco,
+      otp_app: :confex,
+      my_default: {:system, "TESTENV", "default value"}
   end
 
   setup do
     System.delete_env("TESTENV")
-    System.delete_env("TESTINTENV")
-    System.delete_env("OVER_VAR")
+    System.delete_env("TESTENV_INT")
+    System.delete_env("TESTENV_REQ")
 
     Application.put_env(:confex, ConfexMacrosTest.TestModule, [
-      foo: "bar",
-      overriden_list: [list: [foo: "baz", bar: "foo"], key: "value"],
-      num: 1,
-      nix: {:system, :integer, "TESTINTENV"},
-      tix: {:system, :integer, "TESTINTENV", 300},
-      baz: {:system, "TESTENV"},
-      biz: {:system, "TESTENV", "default_val"},
-      mex: {:system, :string, "TESTENV"},
-      tox: {:system, :string, "TESTENV", "default_val"},
+      bare: "value",
+      overriden_keyword: [list: [foo: "baz", bar: "bar"], key: "value"],
+      overriden_map: %{list: %{foo: "baz", bar: "bar"}, key: "value"},
+      integer: 1,
+      integer_tuple: {:system, :integer, "TESTENV_INT"},
+      integer_tuple_with_default: {:system, :integer, "TESTENV_INT", 300},
+      string_tuple: {:system, "TESTENV"},
+      string_tuple_with_default: {:system, "TESTENV", "default biz"}
     ])
 
     :ok
   end
 
-  test "different definition types" do
-    assert [overriden_var: nil,
-            foo: "bar",
-            overriden_list: [list: [mix: nil, foo: "baz", bar: "foo"], key: "value"],
-            num: 1,
-            nix: nil,
-            tix: 300,
-            baz: nil,
-            biz: "default_val",
-            mex: nil,
-            tox: "default_val"] = TestModule.config
+  test "uses defaults when app config can not be resolved" do
+    assert_raise ArgumentError, "can not resolve key TESTENV_REQ value via " <>
+                                "adapter Elixir.Confex.Adapters.SystemEnvironment", fn ->
+      TestModule.config()
+    end
 
-    System.put_env("TESTENV", "other_val")
-    System.put_env("TESTINTENV", "600")
-    System.put_env("OVER_VAR", "readme")
+    System.put_env("TESTENV_REQ", "custom req value")
 
-    assert [overriden_var: "readme",
-            foo: "bar",
-            overriden_list: [list: [mix: "readme", foo: "baz", bar: "foo"], key: "value"],
-            num: 1,
-            nix: 600,
-            tix: 600,
-            baz: "other_val",
-            biz: "other_val",
-            mex: "other_val",
-            tox: "other_val"] = TestModule.config
+    assert [
+      overriden_var: "custom req value",
+      overriden_keyword: [list: [foo: "foo", mix: "default mix"]],
+      overriden_map: %{list: %{foo: "foo", mix: "default mix"}}
+    ] = TestModule.config()
   end
 
-  test "module without OTP app" do
-    assert [overriden_var: nil] = TestModuleWithoutOTP.config
+  test "resolves configuration without defaults" do
+    System.put_env("TESTENV", "custom value")
 
-    System.put_env("OVER_VAR", "readme")
+    Application.put_env(:confex, ConfexMacrosTest.TestModuleWithoutDefaults, [
+      string_tuple: {:system, "TESTENV"},
+    ])
 
-    assert [overriden_var: "readme"] = TestModuleWithoutOTP.config
+    assert [
+      string_tuple: "custom value"
+    ] = TestModuleWithoutDefaults.config()
   end
 
-  test "intermediate macro test" do
-    assert [some_var: "val"] = TestModuleFromMacro.config
+  test "merges and resolves configuration" do
+    System.put_env("TESTENV", "custom value")
+    System.put_env("TESTENV_INT", "600")
+    System.put_env("TESTENV_REQ", "custom req value")
 
-    System.put_env("TESTENV", "other_val")
-    System.put_env("TESTINTENV", "600")
-    System.put_env("OVER_VAR", "readme")
+    assert [
+      overriden_var: "custom req value",
+      bare: "value",
+      overriden_keyword: [key: "value", list: [mix: "custom value", foo: "baz", bar: "bar"]],
+      overriden_map: %{key: "value", list: %{mix: "custom value", foo: "baz", bar: "bar"}},
+      integer: 1,
+      integer_tuple: 600,
+      integer_tuple_with_default: 600,
+      string_tuple: "custom value",
+      string_tuple_with_default: "custom value"
+    ] = TestModule.config()
+  end
 
-    assert [some_var: "val"] = TestModuleFromMacro.config
+  test "can be used in intermediate marco" do
+    assert [my_default: "default value"] = TestModuleFromMacro.config()
+    System.put_env("TESTENV", "custom value")
+    assert [my_default: "custom value"] = TestModuleFromMacro.config()
   end
 end
