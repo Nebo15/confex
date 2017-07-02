@@ -3,6 +3,13 @@ defmodule Confex.ResolverTest do
   alias Confex.Resolver
   doctest Confex.Resolver
 
+  defmodule TestAdapter do
+    @behaviour Confex.Adapter
+
+    def fetch_value(key),
+      do: {:ok, key}
+  end
+
   describe "resolve/1" do
     test "resolves nil values" do
       assert {:ok, nil} == Resolver.resolve(nil)
@@ -159,9 +166,28 @@ defmodule Confex.ResolverTest do
                                     "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
         == Resolver.resolve({:system, :list, "DOES_NOT_EXIST"})
     end
+
+    test "custom adapters" do
+      System.put_env("TESTENV", "foo")
+      assert {:ok, "foo"} ==
+        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, "TESTENV"})
+      assert {:ok, "foo"} ==
+        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, :string, "TESTENV"})
+      assert {:ok, "foo"} ==
+        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, "DOES_NOT_EXIST", "foo"})
+      assert {:ok, "foo"} ==
+        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, :string, "DOES_NOT_EXIST", "foo"})
+    end
   end
 
-  test "resolves with custom adapters" do
-    assert {:ok, "foo"} == Resolver.resolve({Confex.Adapters.SystemEnvironment, "DOES_NOT_EXIST", "foo"})
+  test "resolves with third-party adapters" do
+    assert {:ok, "TESTENV"} ==
+      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, "TESTENV"})
+    assert {:ok, "TESTENV"} ==
+      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, :string, "TESTENV"})
+    assert {:ok, "DOES_NOT_EXIST"} ==
+      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, "DOES_NOT_EXIST", "foo"})
+    assert {:ok, "DOES_NOT_EXIST"} ==
+      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, :string, "DOES_NOT_EXIST", "foo"})
   end
 end

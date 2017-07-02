@@ -6,11 +6,8 @@ defmodule Confex.Resolver do
   alias Confex.Adapter
   alias Confex.Type
 
-  @types [:string, :integer, :float, :boolean, :atom, :module, :list]
-
-  # If you are distributing new adapter for Confex,
-  # please contribute additional value to this list.
-  @adapters Application.get_env(:confex, :adapters, [:system, Confex.Adapters.SystemEnvironment])
+  @known_types [:string, :integer, :float, :boolean, :atom, :module, :list]
+  @known_adapter_aliases [:system]
 
   @doc """
   Resolves all configuration tuples via adapters.
@@ -47,7 +44,7 @@ defmodule Confex.Resolver do
     end
   end
   def resolve(config),
-    do: resolve_value(config)
+    do: maybe_resolve_with_adapter(config)
 
   @doc """
   Same as `resolve/1` but will raise `ArgumentError` if one of configuration tuples can not be resolved.
@@ -76,7 +73,7 @@ defmodule Confex.Resolver do
     end
   end
   defp reduce_map({key, value}, acc) do
-    case resolve_value(value) do
+    case maybe_resolve_with_adapter(value) do
       {:ok, value} -> {:cont, Map.put(acc, key, value)}
       {:error, reason} -> {:halt, {:error, reason}}
     end
@@ -97,7 +94,7 @@ defmodule Confex.Resolver do
     end
   end
   defp reduce_list({key, value}, acc) when is_tuple(value) do
-    case resolve_value(value) do
+    case maybe_resolve_with_adapter(value) do
       {:ok, value} -> {:cont, acc ++ [{key, value}]}
       {:error, reason} -> {:halt, {:error, reason}}
     end
@@ -105,9 +102,35 @@ defmodule Confex.Resolver do
   defp reduce_list(value, acc),
     do: {:cont, acc ++ [value]}
 
-  defp resolve_value({adapter, type, key, default_value}) when adapter in @adapters and type in @types do
-    with adapter <- Adapter.to_module(adapter),
-         {:ok, value} <- adapter.fetch_value(key),
+  defp maybe_resolve_with_adapter({{:via, adapter}, type, key, default_value})
+    when is_atom(adapter) and type in @known_types,
+    do: resolve_value(adapter, type, key, default_value)
+  defp maybe_resolve_with_adapter({adapter_alias, type, key, default_value})
+    when adapter_alias in @known_adapter_aliases and type in @known_types,
+    do: adapter_alias |> Adapter.to_module() |> resolve_value(type, key, default_value)
+  defp maybe_resolve_with_adapter({{:via, adapter}, type, key})
+    when is_atom(adapter) and type in @known_types,
+    do: resolve_value(adapter, type, key)
+  defp maybe_resolve_with_adapter({adapter_alias, type, key})
+    when adapter_alias in @known_adapter_aliases and type in @known_types,
+    do: adapter_alias |> Adapter.to_module() |> resolve_value(type, key)
+  defp maybe_resolve_with_adapter({{:via, adapter}, key, default_value})
+    when is_atom(adapter) and is_binary(key),
+    do: resolve_value(adapter, :string, key, default_value)
+  defp maybe_resolve_with_adapter({adapter_alias, key, default_value})
+    when adapter_alias in @known_adapter_aliases,
+    do: adapter_alias |> Adapter.to_module() |> resolve_value(:string, key, default_value)
+  defp maybe_resolve_with_adapter({{:via, adapter}, key})
+    when is_atom(adapter),
+    do: resolve_value(adapter, :string, key)
+  defp maybe_resolve_with_adapter({adapter_alias, key})
+    when adapter_alias in @known_adapter_aliases,
+    do: adapter_alias |> Adapter.to_module() |> resolve_value(:string, key)
+  defp maybe_resolve_with_adapter(value),
+    do: {:ok, value}
+
+  defp resolve_value(adapter, type, key, default_value) do
+    with {:ok, value} <- adapter.fetch_value(key),
          {:ok, value} <- Type.cast(value, type) do
       {:ok, value}
     else
@@ -115,20 +138,14 @@ defmodule Confex.Resolver do
       :error -> {:ok, default_value}
     end
   end
-  defp resolve_value({adapter, type, key}) when adapter in @adapters and type in @types do
-    adapter_mod = Adapter.to_module(adapter)
-    with {:ok, value} <- adapter_mod.fetch_value(key),
+
+  defp resolve_value(adapter, type, key) do
+    with {:ok, value} <- adapter.fetch_value(key),
          {:ok, value} <- Type.cast(value, type) do
       {:ok, value}
     else
       {:error, reason} -> {:error, {:invalid, reason}}
-      :error -> {:error, {:unresolved, "can not resolve key #{key} value via adapter #{to_string(adapter_mod)}"}}
+      :error -> {:error, {:unresolved, "can not resolve key #{key} value via adapter #{to_string(adapter)}"}}
     end
   end
-  defp resolve_value({adapter, key, default_value}) when adapter in @adapters,
-    do: resolve_value({adapter, :string, key, default_value})
-  defp resolve_value({adapter, key}) when adapter in @adapters,
-    do: resolve_value({adapter, :string, key})
-  defp resolve_value(value),
-    do: {:ok, value}
 end

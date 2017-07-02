@@ -35,9 +35,9 @@ defmodule Confex do
     * `{:system, :integer, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable and cast it \
     to integer or return `default` if it's not set or has empty value.
     * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
-    * `{MyAdapter, :string, "ENV_NAME", default}` - read value by key "ENV_NAME" via adapter `MyAdapter` or return \
-    `default` if it's not set or has empty value.
-    * `{MyAdapter, :string, "ENV_NAME"}` - same as above, with default value `nil`.
+    * `{{:via, MyAdapter}, :string, "ENV_NAME", default}` - read value by key "ENV_NAME" via adapter `MyAdapter` \
+    or return `default` if it's not set or has empty value.
+    * `{{:via, MyAdapter}, :string, "ENV_NAME"}` - same as above, with default value `nil`.
 
   # Adapters
 

@@ -12,7 +12,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
   1. Add `confex` to your list of dependencies in `mix.exs`:
 
     def deps do
-      [{:confex, "~> 3.0.0"}]
+      [{:confex, "~> 3.1.0"}]
     end
 
   2. Ensure `confex` is started before your application:
@@ -59,7 +59,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
   * `{:system, :list, "ENV_NAME"}`.
   * `{:system, :list, "ENV_NAME", [1, 2, 3]}`.
 
-  `:system` can be replaced with any adapter that implements `Confex.Adapter` behaviour.
+  `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
 
 2. Read configuration by replacing `Application.fetch_env/2`, `Application.fetch_env!/2` and `Application.get_env/3` calls with `Confex` functions
 
