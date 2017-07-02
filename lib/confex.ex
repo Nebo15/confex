@@ -41,9 +41,10 @@ defmodule Confex do
 
   # Adapters
 
-  By-default, you can use `:system` adapter to read configuration from system environment variables.
+    `:system` - read configuration from system environment;
+    `:system_file` - read file path from system environment and read configuration from this file.
 
-  You can extend it by implementing `Confex.Adapter` behaviour with your own logic.
+  You can create adapter by implementing `Confex.Adapter` behaviour with your own logic.
   """
   alias Confex.Resolver
 

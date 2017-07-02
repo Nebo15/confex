@@ -7,7 +7,7 @@ defmodule Confex.Resolver do
   alias Confex.Type
 
   @known_types [:string, :integer, :float, :boolean, :atom, :module, :list]
-  @known_adapter_aliases [:system]
+  @known_adapter_aliases [:system, :system_file]
 
   @doc """
   Resolves all configuration tuples via adapters.

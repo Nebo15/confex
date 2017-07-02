@@ -12,7 +12,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
   1. Add `confex` to your list of dependencies in `mix.exs`:
 
     def deps do
-      [{:confex, "~> 3.1.0"}]
+      [{:confex, "~> 3.2.0"}]
     end
 
   2. Ensure `confex` is started before your application:

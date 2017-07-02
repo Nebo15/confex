@@ -1,6 +1,6 @@
 defmodule Confex.Adapters.SystemEnvironment do
   @moduledoc """
-  Adapter that resolves Confex types from system environment variables.
+  Adapter that resolves Confex values from system environment variables.
   """
   @behaviour Confex.Adapter
 

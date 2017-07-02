@@ -12,4 +12,6 @@ defmodule Confex.Adapter do
   # Resolve adapter with shorthand for built-in's.
   def to_module(:system),
     do: Confex.Adapters.SystemEnvironment
+  def to_module(:system_file),
+    do: Confex.Adapters.SystemEnvironment
 end
