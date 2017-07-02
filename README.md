@@ -34,30 +34,30 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
         routing_key: {:system, "OUT_ROUTING_KEY", ""},
         durable:     {:system, "OUT_DURABLE", false},
         port:        {:system, :integer, "OUT_PORT", 1234},
-      ],
+      ]
 
   Configuration tuples examples:
 
-    * `var` - any bare values will be left as-is.
-    * `{:system, "ENV_NAME", "default"}` - read string from system environment or fallback to `"default"` if it is not set.
-    * `{:system, "ENV_NAME"}` - same as above, but raise error if `ENV_NAME` is not set.
+  * `var` - any bare values will be left as-is.
+  * `{:system, "ENV_NAME", "default"}` - read string from system environment or fallback to `"default"` if it is not set.
+  * `{:system, "ENV_NAME"}` - same as above, but raise error if `ENV_NAME` is not set.
 
   Additionally you can cast string values to common types:
 
-    * `{:system, :string, "ENV_NAME", "default"}` (string is a default type).
-    * `{:system, :string, "ENV_NAME"}`.
-    * `{:system, :integer, "ENV_NAME", 123}`.
-    * `{:system, :integer, "ENV_NAME"}`.
-    * `{:system, :float, "ENV_NAME", 123.5}`.
-    * `{:system, :float, "ENV_NAME"}`.
-    * `{:system, :boolean, "ENV_NAME", true}`.
-    * `{:system, :boolean, "ENV_NAME"}`.
-    * `{:system, :atom, "ENV_NAME"}`.
-    * `{:system, :atom, "ENV_NAME", :default}`.
-    * `{:system, :module, "ENV_NAME"}`.
-    * `{:system, :module, "ENV_NAME", MyDefault}`.
-    * `{:system, :list, "ENV_NAME"}`.
-    * `{:system, :list, "ENV_NAME", [1, 2, 3]}`.
+  * `{:system, :string, "ENV_NAME", "default"}` (string is a default type).
+  * `{:system, :string, "ENV_NAME"}`.
+  * `{:system, :integer, "ENV_NAME", 123}`.
+  * `{:system, :integer, "ENV_NAME"}`.
+  * `{:system, :float, "ENV_NAME", 123.5}`.
+  * `{:system, :float, "ENV_NAME"}`.
+  * `{:system, :boolean, "ENV_NAME", true}`.
+  * `{:system, :boolean, "ENV_NAME"}`.
+  * `{:system, :atom, "ENV_NAME"}`.
+  * `{:system, :atom, "ENV_NAME", :default}`.
+  * `{:system, :module, "ENV_NAME"}`.
+  * `{:system, :module, "ENV_NAME", MyDefault}`.
+  * `{:system, :list, "ENV_NAME"}`.
+  * `{:system, :list, "ENV_NAME", [1, 2, 3]}`.
 
   `:system` can be replaced with any adapter that implements `Confex.Adapter` behaviour.
 
