@@ -10,7 +10,7 @@ defmodule Confex.Resolver do
 
   # If you are distributing new adapter for Confex,
   # please contribute additional value to this list.
-  @adapters Application.fetch_env!(:confex, :adapters)
+  @adapters Application.get_env(:confex, :adapters, [:system, Confex.Adapters.SystemEnvironment])
 
   @doc """
   Resolves all configuration tuples via adapters.
