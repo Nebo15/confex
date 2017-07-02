@@ -17,7 +17,7 @@ defmodule Confex.Resolver do
 
   Can be used when values are stored not in Application environment.
 
-  # Example
+  ## Example
 
       iex> #{__MODULE__}.resolve(nil)
       {:ok, nil}

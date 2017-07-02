@@ -58,7 +58,7 @@ defmodule Confex do
 
   If the configuration parameter does not exist or can not be parsed, the function returns :error.
 
-  # Example
+  ## Example
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
@@ -101,7 +101,7 @@ defmodule Confex do
 
   If the configuration parameter does not exist or can not be parsed, raises `ArgumentError`.
 
-    # Example
+    ## Example
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
@@ -145,7 +145,7 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
 
   If the configuration parameter does not exist or can not be parsed, returns default value or `nil`.
 
-  # Example
+  ## Example
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})

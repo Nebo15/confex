@@ -7,7 +7,7 @@ defmodule Confex.Adapters.SystemEnvironment do
   @doc """
   Fetch value from environment variable.
 
-  # Example
+  ## Example
 
       iex> :ok = System.delete_env("SOME_TEST_ENV")
       ...> :error = #{__MODULE__}.fetch_value("SOME_TEST_ENV")
