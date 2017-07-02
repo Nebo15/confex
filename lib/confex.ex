@@ -19,9 +19,9 @@ defmodule Confex do
   | Confex Type | Elixir Type       | Description |
   | ----------- | ----------------- | ----------- |
   | `:string`   | `String.t`        | Default.    |
-  | `:integer`  | `Integer.t`       | Parse Integer value in string or raise. |
-  | `:float`    | `Float.t`         | Parse Float value in string or raise. |
-  | `:boolean`  | `true` or `false` | Cast 'true', '1', 'yes' to `true`; 'false', '0', 'no' to `false` or raise. |
+  | `:integer`  | `Integer.t`       | Parse Integer value in string. |
+  | `:float`    | `Float.t`         | Parse Float value in string. |
+  | `:boolean`  | `true` or `false` | Cast 'true', '1', 'yes' to `true`; 'false', '0', 'no' to `false`. |
   | `:atom`     | `atom()`          | Cast string to atom. |
   | `:module`   | `module()`        | Cast string to module name. |
   | `:list`     | `List.t`          | Cast comma-separated string (`1,2,3`) to list (`[1, 2, 3]`). |
@@ -101,7 +101,7 @@ defmodule Confex do
 
   If the configuration parameter does not exist or can not be parsed, raises `ArgumentError`.
 
-    ## Example
+  ## Example
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
@@ -194,6 +194,8 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
   Recursively merges configuration with default values.
 
   Both values must be either in `Keyword` or `Map` structures, otherwise ArtumentError is raised.
+
+  ## Example
 
       iex> [b: 3, a: 1] = #{__MODULE__}.merge_configs!([a: 1], [a: 2, b: 3])
       [b: 3, a: 1]

@@ -34,20 +34,20 @@ defmodule Confex.Resolver do
   @spec resolve(config :: any()) :: {:ok, any()} | {:error, any()}
   def resolve(nil),
     do: {:ok, nil}
-  def resolve(list) when is_list(list) do
-    case Enum.reduce_while(list, [], &reduce_list/2) do
+  def resolve(config) when is_list(config) do
+    case Enum.reduce_while(config, [], &reduce_list/2) do
       {:error, reason} -> {:error, reason}
       result -> {:ok, result}
     end
   end
-  def resolve(map) when is_map(map) do
-    case Enum.reduce_while(map, %{}, &reduce_map/2) do
+  def resolve(config) when is_map(config) do
+    case Enum.reduce_while(config, %{}, &reduce_map/2) do
       {:error, reason} -> {:error, reason}
       result -> {:ok, result}
     end
   end
-  def resolve(value),
-    do: resolve_value(value)
+  def resolve(config),
+    do: resolve_value(config)
 
   @doc """
   Same as `resolve/1` but will raise `ArgumentError` if one of configuration tuples can not be resolved.

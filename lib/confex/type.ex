@@ -19,7 +19,7 @@ defmodule Confex.Type do
   Parse string and cast it to Elixir type.
   """
   @spec cast(value :: value, type :: type) :: {:ok, any()} | {:error, String.t}
-  def cast(nil, _),
+  def cast(nil, _type),
     do: {:ok, nil}
   def cast(value, :string),
     do: {:ok, value}
