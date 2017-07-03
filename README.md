@@ -195,6 +195,15 @@ You can validate configuration by overriding `validate_config!/1` function, whic
       end
     end
 
+# Adapters
+
+Currently Confex supports two embedded adapters:
+
+  `:system` - read configuration from system environment;
+  `:system_file` - read file path from system environment and read configuration from this file. Useful when you want to resolve Docker, Swarm or Kubernetes secrets that are stored in files.
+
+You can create adapter by implementing `Confex.Adapter` behaviour with your own logic.
+
 # Helpful links
 
 * [Docs](https://hexdocs.pm/confex)
