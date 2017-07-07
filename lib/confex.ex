@@ -180,7 +180,7 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
       ...> 1 = #{__MODULE__}.get_env(:myapp, :test_var)
       1
   """
-  @spec get_env(app :: Application.app(), key :: Application.key()) :: {:ok, Application.value()} | {:error, any()}
+  @spec get_env(app :: Application.app(), key :: Application.key(), term) :: Application.value() | term
   def get_env(app, key, default \\ nil) do
     with {:ok, config} <- Application.fetch_env(app, key),
          {:ok, config} <- Resolver.resolve(config) do
