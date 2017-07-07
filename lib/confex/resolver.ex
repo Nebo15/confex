@@ -80,7 +80,7 @@ defmodule Confex.Resolver do
   end
 
   defp reduce_list({key, nil}, acc),
-    do: {:cont, {key, nil} ++ acc}
+    do: {:cont, [{key, nil}] ++ acc}
   defp reduce_list({key, list}, acc) when is_list(list) do
     case Enum.reduce_while(list, [], &reduce_list/2) do
       {:error, reason} -> {:halt, {:error, reason}}
