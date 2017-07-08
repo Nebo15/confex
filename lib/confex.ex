@@ -41,8 +41,8 @@ defmodule Confex do
 
   # Adapters
 
-    `:system` - read configuration from system environment;
-    `:system_file` - read file path from system environment and read configuration from this file.
+    * `:system` - read configuration from system environment;
+    * `:system_file` - read file path from system environment and read configuration from this file.
 
   You can create adapter by implementing `Confex.Adapter` behaviour with your own logic.
   """
