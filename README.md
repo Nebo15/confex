@@ -12,7 +12,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
   1. Add `confex` to your list of dependencies in `mix.exs`:
 
     def deps do
-      [{:confex, "~> 3.2.1"}]
+      [{:confex, "~> 3.2.2"}]
     end
 
   2. Ensure `confex` is started before your application:
@@ -199,8 +199,8 @@ You can validate configuration by overriding `validate_config!/1` function, whic
 
 Currently Confex supports two embedded adapters:
 
-  `:system` - read configuration from system environment;
-  `:system_file` - read file path from system environment and read configuration from this file. Useful when you want to resolve Docker, Swarm or Kubernetes secrets that are stored in files.
+  * `:system` - read configuration from system environment;
+  * `:system_file` - read file path from system environment and read configuration from this file. Useful when you want to resolve Docker, Swarm or Kubernetes secrets that are stored in files.
 
 You can create adapter by implementing `Confex.Adapter` behaviour with your own logic.
 
