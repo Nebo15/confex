@@ -93,7 +93,7 @@ defmodule MyApp do
     url = System.get_env("DATABASE_URL")
     config =
       if url do
-        Keyword.merge(config, Ecto.Repo.Supervisor.parse_url(url)),
+        Keyword.merge(config, Ecto.Repo.Supervisor.parse_url(url))
       else
         {:ok, config} = Confex.Resolver.resolve(config)
         config
