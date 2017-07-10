@@ -48,8 +48,8 @@ defmodule Confex do
   """
   alias Confex.Resolver
 
-  @type configuration_tuple :: {value_type :: Confex.Type.t, key :: String.t, default :: any()}
-                             | {value_type :: Confex.Type.t, key :: String.t}
+  @type configuration_tuple :: {value_type :: Confex.Type.type, key :: String.t, default :: any()}
+                             | {value_type :: Confex.Type.type, key :: String.t}
                              | {key :: String.t, default :: any()}
                              | {key :: String.t}
 
@@ -212,7 +212,7 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
       ** (ArgumentError) can not merge default values [b: 2] with configuration %{a: 1} because their types mismatch, \
 expected both to be either Map or Keyword structures
   """
-  @spec merge_configs!(config :: Keyword.t | Map.t, defaults :: Keyword.t | Map.t) :: Keyword.t | Map.t
+  @spec merge_configs!(config :: Keyword.t | map, defaults :: Keyword.t | map) :: Keyword.t | map
   def merge_configs!(config, []),
     do: config
   def merge_configs!(nil, defaults),
