@@ -53,7 +53,7 @@ defmodule Confex.Type do
   def cast(value, :atom) do
     result =
       value
-      |> String.to_char_list()
+      |> String.to_charlist()
       |> List.to_atom()
 
     {:ok, result}
