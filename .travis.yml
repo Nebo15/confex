@@ -22,4 +22,4 @@ script:
   # Check code style
   - "mix dogma"
   # Check type safety
-  - "mix dialyzer --unmatched_returns --error_handling --race_conditions --underspecs"
+  - "MIX_ENV=dev mix dialyzer --unmatched_returns --error_handling --race_conditions --underspecs"
