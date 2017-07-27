@@ -2,6 +2,7 @@ language: elixir
 cache:
   directories:
   - deps
+  - _build/dev
 elixir:
   - 1.4.5
 otp_release:
@@ -20,3 +21,5 @@ script:
   - "mix credo"
   # Check code style
   - "mix dogma"
+  # Check type safety
+  - "mix dialyzer --unmatched_returns --error_handling --race_conditions --underspecs"
