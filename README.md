@@ -92,7 +92,7 @@ defmodule MyApp do
   def init(_, config) do
     url = System.get_env("DATABASE_URL")
     config =
-      if url, do:
+      if url do
         [url: url] ++ config
       else
         {:ok, config} = Confex.Resolver.resolve(config)
