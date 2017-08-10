@@ -92,13 +92,13 @@ defmodule MyApp do
   def init(_, config) do
     url = System.get_env("DATABASE_URL")
     config =
-      if url do
-        Keyword.merge(config, Ecto.Repo.Supervisor.parse_url(url))
+      if url, do:
+        [url: url] ++ config
       else
         {:ok, config} = Confex.Resolver.resolve(config)
         config
       end
-
+      
     unless config[:database] do
       raise "Set DB_NAME environment variable!"
     end
