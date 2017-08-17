@@ -10,73 +10,85 @@ It's inspired by Phoenix `{:system, value}` definition for HTTP port.
 It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed as project dependency:
 
   1. Add `confex` to your list of dependencies in `mix.exs`:
-
-    def deps do
-      [{:confex, "~> 3.2.3"}]
-    end
+  
+      ```elixir
+      def deps do
+        [{:confex, "~> 3.2.3"}]
+      end
+      ```
 
   2. Ensure `confex` is started before your application:
 
-    def application do
-      [applications: [:confex]]
-    end
+      ```elixir
+      def application do
+        [applications: [:confex]]
+      end
+      ```
 
 # Usage
 
 1. Replace values with configuration tuples
 
-  Define configuration in your `config.exs`:
+    Define configuration in your `config.exs`:
 
-    config :my_app, MyApp.MyQueue,
-      queue: [
-        name:        {:system, "OUT_QUEUE_NAME", "MyQueueOut"},
-        error_name:  {:system, "OUT_ERROR_QUEUE_NAME", "MyQueueOut.Errors"},
-        routing_key: {:system, "OUT_ROUTING_KEY", ""},
-        durable:     {:system, "OUT_DURABLE", false},
-        port:        {:system, :integer, "OUT_PORT", 1234},
-      ]
+      ```elixir
+      config :my_app, MyApp.MyQueue,
+        queue: [
+          name:        {:system, "OUT_QUEUE_NAME", "MyQueueOut"},
+          error_name:  {:system, "OUT_ERROR_QUEUE_NAME", "MyQueueOut.Errors"},
+          routing_key: {:system, "OUT_ROUTING_KEY", ""},
+          durable:     {:system, "OUT_DURABLE", false},
+          port:        {:system, :integer, "OUT_PORT", 1234},
+        ]
+      ```
 
-  Configuration tuples examples:
+    Configuration tuples examples:
 
-  * `var` - any bare values will be left as-is.
-  * `{:system, "ENV_NAME", "default"}` - read string from system environment or fallback to `"default"` if it is not set.
-  * `{:system, "ENV_NAME"}` - same as above, but raise error if `ENV_NAME` is not set.
+    * `var` - any bare values will be left as-is.
+    * `{:system, "ENV_NAME", "default"}` - read string from system environment or fallback to `"default"` if it is not set.
+    * `{:system, "ENV_NAME"}` - same as above, but raise error if `ENV_NAME` is not set.
 
-  Additionally you can cast string values to common types:
+    Additionally you can cast string values to common types:
 
-  * `{:system, :string, "ENV_NAME", "default"}` (string is a default type).
-  * `{:system, :string, "ENV_NAME"}`.
-  * `{:system, :integer, "ENV_NAME", 123}`.
-  * `{:system, :integer, "ENV_NAME"}`.
-  * `{:system, :float, "ENV_NAME", 123.5}`.
-  * `{:system, :float, "ENV_NAME"}`.
-  * `{:system, :boolean, "ENV_NAME", true}`.
-  * `{:system, :boolean, "ENV_NAME"}`.
-  * `{:system, :atom, "ENV_NAME"}`.
-  * `{:system, :atom, "ENV_NAME", :default}`.
-  * `{:system, :module, "ENV_NAME"}`.
-  * `{:system, :module, "ENV_NAME", MyDefault}`.
-  * `{:system, :list, "ENV_NAME"}`.
-  * `{:system, :list, "ENV_NAME", [1, 2, 3]}`.
+    * `{:system, :string, "ENV_NAME", "default"}` (string is a default type).
+    * `{:system, :string, "ENV_NAME"}`.
+    * `{:system, :integer, "ENV_NAME", 123}`.
+    * `{:system, :integer, "ENV_NAME"}`.
+    * `{:system, :float, "ENV_NAME", 123.5}`.
+    * `{:system, :float, "ENV_NAME"}`.
+    * `{:system, :boolean, "ENV_NAME", true}`.
+    * `{:system, :boolean, "ENV_NAME"}`.
+    * `{:system, :atom, "ENV_NAME"}`.
+    * `{:system, :atom, "ENV_NAME", :default}`.
+    * `{:system, :module, "ENV_NAME"}`.
+    * `{:system, :module, "ENV_NAME", MyDefault}`.
+    * `{:system, :list, "ENV_NAME"}`.
+    * `{:system, :list, "ENV_NAME", [1, 2, 3]}`.
 
-  `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
+    `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
 
 2. Read configuration by replacing `Application.fetch_env/2`, `Application.fetch_env!/2` and `Application.get_env/3` calls with `Confex` functions
 
-  Fetch string values:
+    Fetch string values:
 
-    iex> Confex.fetch_env(:myapp, MyKey)
-    {:ok, "abc"}
+      ```elixir
+      iex> Confex.fetch_env(:myapp, MyKey)
+      {:ok, "abc"}
+      ```
 
-  Fetch integer values:
+    Fetch integer values:
 
-    iex> Confex.fetch_env(:myapp, MyIntKey)
-    {:ok, 123}
+      ```elixir
+      iex> Confex.fetch_env(:myapp, MyIntKey)
+      {:ok, 123}
+      ```
 
-  Fetch configuration from maps or keywords:
+    Fetch configuration from maps or keywords:
 
-    iex> Confex.fetch_env(:myapp, MyIntKey)
-    {:ok, [a: 123, b: "abc"]}
+      ```elixir
+      iex> Confex.fetch_env(:myapp, MyIntKey)
+      {:ok, [a: 123, b: "abc"]}
+      ```
 
 ## Integrating with Ecto
 
@@ -162,20 +174,24 @@ end
 ## Using Confex macros
 
 Confex is supplied with helper macros that allow to attach configuration to specific modules of your application.
-
-    defmodule Connection do
-      use Confex, otp_app: :myapp
-    end
+    
+  ```elixir
+  defmodule Connection do
+    use Confex, otp_app: :myapp
+  end
+  ```
 
   It will add `config/0` function to `Connection` module that reads configuration at run-time for `:myapp` OTP application with key `Connection`.
 
 You can add defaults by extending macro options:
 
-    defmodule Connection do
-      use Confex,
-        otp_app: :myapp,
-        some_value: {:system, "ENV_NAME", "this_will_be_default value"}
-    end
+  ```elixir
+  defmodule Connection do
+    use Confex,
+      otp_app: :myapp,
+      some_value: {:system, "ENV_NAME", "this_will_be_default value"}
+  end
+  ```
 
   If application environment contains values in `Keyword` or `Map` structs, default values will be recursively merged with application configuration.
 
@@ -183,17 +199,19 @@ You can add defaults by extending macro options:
 
 You can validate configuration by overriding `validate_config!/1` function, which will receive configuration and must return it back to caller function. It will be evaluated each time `config/1` is called.
 
-    defmodule Connection do
-      use Confex, otp_app: :myapp
+  ```elixir
+  defmodule Connection do
+    use Confex, otp_app: :myapp
 
-      def validate_config!(config) do
-        unless config[:password] do
-          raise "Password is not set!"
-        end
-
-        config
+    def validate_config!(config) do
+      unless config[:password] do
+        raise "Password is not set!"
       end
+
+      config
     end
+  end
+  ```
 
 # Adapters
 
