@@ -225,5 +225,6 @@ You can create adapter by implementing `Confex.Adapter` behaviour with your own 
 # Helpful links
 
 * [Docs](https://hexdocs.pm/confex)
+* [Runtime configuration, migrations and deployment for Elixir applications](https://medium.com/nebo-15/runtime-configuration-migrations-and-deployment-for-elixir-applications-6295b892fa6a).
 * [REPLACE_OS_VARS in Distillery](https://hexdocs.pm/distillery/runtime-configuration.html#vm-args)
 * [How to config environment variables with Elixir and Exrm](http://blog.plataformatec.com.br/2016/05/how-to-config-environment-variables-with-elixir-and-exrm/) by Platformatech.
