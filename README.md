@@ -92,7 +92,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
 ## Integrating with Ecto
 
-Ecto has a `init/2` callback, you can use it with Confex to read environment variables. We used to have all our repos to look like this:
+`Ecto.Repo` has a [`init/2`](https://hexdocs.pm/ecto/Ecto.Repo.html#c:init/2) callback, you can use it with Confex to read environment variables. We used to have all our repos to look like this:
 
 ```elixir
 defmodule MyApp do
@@ -138,38 +138,31 @@ end
 
 ## Integrating with Phoenix
 
-1. Set `on_init` callback in your `prod.exs`:
+Same for Phoenix, use [`init/2`](https://hexdocs.pm/phoenix/Phoenix.Endpoint.html#c:init/2) callback of `Phoenix.Endpoint`:
 
-    ```elixir
-    config :my_app, MyApp.Web.Endpoint,
-      on_init: {MyApp.Web.Endpoint, :load_from_system_env, []}
-    ```
+```elixir
+defmodule MyApp.Web.Endpoint do
 
-2. Add `load_from_system_env` function to your endpoint:
+  # Some code here
 
-    ```elixir
-    defmodule Mithril.Web.Endpoint do
+  @doc """
+  Dynamically loads configuration from the system environment
+  on startup.
 
-      # Some code here
+  It receives the endpoint configuration from the config files
+  and must return the updated configuration.
+  """
+  def init(_type, config) do
+    {:ok, config} = Confex.Resolver.resolve(config)
 
-      @doc """
-      Dynamically loads configuration from the system environment
-      on startup.
-
-      It receives the endpoint configuration from the config files
-      and must return the updated configuration.
-      """
-      def load_from_system_env(config) do
-        {:ok, config} = Confex.Resolver.resolve(config)
-
-        unless config[:secret_key_base] do
-          raise "Set SECRET_KEY environment variable!"
-        end
-
-        {:ok, config}
-      end
+    unless config[:secret_key_base] do
+      raise "Set SECRET_KEY environment variable!"
     end
-    ```
+
+    {:ok, config}
+  end
+end
+```
 
 ## Using Confex macros
 
