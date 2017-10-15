@@ -163,6 +163,10 @@ you can resolve it one-time when application is started:
   end
   ```
 
+However, don't drink too much Kool-Aid. Direct calls to the Confex are more explicit and should be default way to go,
+you don't want your colleagues to waste their time finding out how that resolved value got into the configuration,
+right?
+
 ## Using Confex macros
 
 Confex is supplied with helper macros that allow to attach configuration to specific modules of your application.
