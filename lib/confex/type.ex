@@ -31,10 +31,10 @@ defmodule Confex.Type do
         {:ok, integer}
 
       {_integer, remainder_of_binary} ->
-        {:error, "can not cast #{inspect value} to Integer, " <>
+        {:error, "can not cast #{inspect(value)} to Integer, " <>
                  "result contains binary remainder #{remainder_of_binary}"}
       :error ->
-        {:error, "can not cast #{inspect value} to Integer"}
+        {:error, "can not cast #{inspect(value)} to Integer"}
     end
   end
   def cast(value, :float) do
@@ -43,11 +43,11 @@ defmodule Confex.Type do
         {:ok, float}
 
       {_float, remainder_of_binary} ->
-        {:error, "can not cast #{inspect value} to Float, " <>
+        {:error, "can not cast #{inspect(value)} to Float, " <>
                  "result contains binary remainder #{remainder_of_binary}"}
 
       :error ->
-        {:error, "can not cast #{inspect value} to Float"}
+        {:error, "can not cast #{inspect(value)} to Float"}
     end
   end
   def cast(value, :atom) do
@@ -69,7 +69,7 @@ defmodule Confex.Type do
         {:ok, false}
 
       true ->
-        {:error, "can not cast #{inspect value} to boolean, " <>
+        {:error, "can not cast #{inspect(value)} to boolean, " <>
                  "expected values are 'true', 'false', '1', '0', 'yes' or 'no'"}
     end
   end

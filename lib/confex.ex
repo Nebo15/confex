@@ -85,7 +85,7 @@ defmodule Confex do
       ...> {:ok, 1} = #{__MODULE__}.fetch_env(:myapp, :test_var)
       {:ok, 1}
   """
-  @spec fetch_env(app :: Application.app(), key :: Application.key()) :: {:ok, Application.value()} | :error
+  @spec fetch_env(app :: Application.app, key :: Application.key) :: {:ok, Application.value} | :error
   def fetch_env(app, key) do
     with {:ok, config} <- Application.fetch_env(app, key),
          {:ok, config} <- Resolver.resolve(config) do
@@ -117,26 +117,26 @@ defmodule Confex do
       iex> :ok = System.delete_env("MY_TEST_ENV")
       ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
       ...> #{__MODULE__}.fetch_env!(:myapp, :test_var)
-      ** (ArgumentError) can't fetch value for application :myapp, \
+      ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, \
 can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemEnvironment
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
       ...> #{__MODULE__}.fetch_env!(:myapp, :test_var)
-      ** (ArgumentError) can't fetch value for application :myapp, can not cast "foo" to Integer
+      ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, can not cast "foo" to Integer
 
       iex> Application.put_env(:myapp, :test_var, 1)
       ...> 1 = #{__MODULE__}.fetch_env!(:myapp, :test_var)
       1
   """
-  @spec fetch_env!(app :: Application.app(), key :: Application.key()) :: Application.value() | no_return
+  @spec fetch_env!(app :: Application.app, key :: Application.key) :: Application.value | no_return
   def fetch_env!(app, key) do
     config = Application.fetch_env!(app, key)
     case Resolver.resolve(config) do
       {:ok, config} ->
         config
       {:error, {_reason, message}} ->
-        raise ArgumentError, "can't fetch value for application #{inspect app}, #{message}"
+        raise ArgumentError, "can't fetch value for key `#{inspect(key)}` of application `#{inspect(app)}`, #{message}"
     end
   end
 
@@ -181,10 +181,10 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
       1
   """
   @spec get_env(
-    app :: Application.app(),
-    key :: Application.key(),
-    default :: Application.value()
-  ) :: Application.value()
+    app :: Application.app,
+    key :: Application.key,
+    default :: Application.value
+  ) :: Application.value
   def get_env(app, key, default \\ nil) do
     with {:ok, config} <- Application.fetch_env(app, key),
          {:ok, config} <- Resolver.resolve(config) do
