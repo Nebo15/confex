@@ -10,10 +10,10 @@ It's inspired by Phoenix `{:system, value}` definition for HTTP port and have no
 It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed as project dependency:
 
   1. Add `confex` to your list of dependencies in `mix.exs`:
-  
+
       ```elixir
       def deps do
-        [{:confex, "~> 3.2.3"}]
+        [{:confex, "~> 3.3.0"}]
       end
       ```
 
@@ -107,7 +107,7 @@ defmodule MyApp do
   def init(_, config) do
     url = System.get_env("DATABASE_URL")
     config = if url, do: [url: url] ++ config, else: Confex.Resolver.resolve!(config)
-      
+
     unless config[:database] do
       raise "Set DB_NAME environment variable!"
     end
@@ -166,7 +166,7 @@ you can resolve it one-time when application is started:
 ## Using Confex macros
 
 Confex is supplied with helper macros that allow to attach configuration to specific modules of your application.
-    
+
   ```elixir
   defmodule Connection do
     use Confex, otp_app: :myapp
