@@ -3,7 +3,7 @@
 [![Deps Status](https://beta.hexfaktor.org/badge/all/github/Nebo15/confex.svg)](https://beta.hexfaktor.org/github/Nebo15/confex) [![Hex.pm Downloads](https://img.shields.io/hexpm/dw/confex.svg?maxAge=3600)](https://hex.pm/packages/confex) [![Latest Version](https://img.shields.io/hexpm/v/confex.svg?maxAge=3600)](https://hex.pm/packages/confex) [![License](https://img.shields.io/hexpm/l/confex.svg?maxAge=3600)](https://hex.pm/packages/confex) [![Build Status](https://travis-ci.org/Nebo15/confex.svg?branch=master)](https://travis-ci.org/Nebo15/confex) [![Coverage Status](https://coveralls.io/repos/github/Nebo15/confex/badge.svg?branch=master)](https://coveralls.io/github/Nebo15/confex?branch=master) [![Ebert](https://ebertapp.io/github/Nebo15/confex.svg)](https://ebertapp.io/github/Nebo15/confex)
 
 Confex simplifies reading configuration at run-time with adapter-based system for fetch values from any source.
-It's inspired by Phoenix `{:system, value}` definition for HTTP port.
+It's inspired by Phoenix `{:system, value}` definition for HTTP port and have no external dependencies.
 
 ## Installation
 
@@ -141,6 +141,24 @@ defmodule MyApp.Web.Endpoint do
   end
 end
 ```
+
+## Populating configuration at start-time
+
+In case you want to keep using `Application.get_env/2` and other methods to keep accessing configuration,
+you can resolve it one-time when application is started:
+
+  ```elixir
+  defmodule MyApp do
+    use Application
+
+    def start(_type, _args) do
+      # Replace Application environment with resolved values
+      Confex.resolve_env!(:my_app)
+
+      # ...
+    end
+  end
+  ```
 
 ## Using Confex macros
 

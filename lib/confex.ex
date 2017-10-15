@@ -196,6 +196,43 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
   end
 
   @doc """
+  Reads all key-value pairs from an application environment and replaces them
+  with resolved values.
+
+  # Example
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, "MY_TEST_ENV"})
+      ...> Confex.resolve_env!(:myapp)
+      ...> "foo" = Application.get_env(:myapp, :test_var)
+      "foo"
+
+      iex> :ok = System.put_env("MY_TEST_ENV", "foo")
+      ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
+      ...> Confex.resolve_env!(:myapp)
+      ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, can not cast "foo" to Integer
+
+  *Warning!* Do not use this function if you want to change your environment
+  while VM is running. All `{:system, _}` tuples would be replaced with actual values.
+  """
+  @spec resolve_env!(app :: Application.app) :: [{Application.key, Application.value}] | no_return
+  def resolve_env!(app) do
+    app
+    |> Application.get_all_env()
+    |> Enum.map(fn {key, config} ->
+      case Resolver.resolve(config) do
+        {:ok, config} ->
+          :ok = Application.put_env(app, key, config)
+          {key, config}
+
+        {:error, {_reason, message}} ->
+          raise ArgumentError, "can't fetch value for key `#{inspect(key)}` of application `#{inspect(app)}`, " <>
+                               message
+      end
+    end)
+  end
+
+  @doc """
   Recursively merges configuration with default values.
 
   Both values must be either in `Keyword` or `Map` structures, otherwise ArtumentError is raised.
