@@ -103,16 +103,16 @@ defmodule Confex.Resolver do
     do: {:cont, acc ++ [value]}
 
   defp maybe_resolve_with_adapter({{:via, adapter}, type, key, default_value})
-    when is_atom(adapter) and type in @known_types,
+    when is_atom(adapter) and (type in @known_types or is_tuple(type)),
     do: resolve_value(adapter, type, key, default_value)
   defp maybe_resolve_with_adapter({adapter_alias, type, key, default_value})
-    when adapter_alias in @known_adapter_aliases and type in @known_types,
+    when adapter_alias in @known_adapter_aliases and (type in @known_types or is_tuple(type)),
     do: adapter_alias |> Adapter.to_module() |> resolve_value(type, key, default_value)
   defp maybe_resolve_with_adapter({{:via, adapter}, type, key})
-    when is_atom(adapter) and type in @known_types,
+    when is_atom(adapter) and (type in @known_types or is_tuple(type)),
     do: resolve_value(adapter, type, key)
   defp maybe_resolve_with_adapter({adapter_alias, type, key})
-    when adapter_alias in @known_adapter_aliases and type in @known_types,
+    when adapter_alias in @known_adapter_aliases and (type in @known_types or is_tuple(type)),
     do: adapter_alias |> Adapter.to_module() |> resolve_value(type, key)
   defp maybe_resolve_with_adapter({{:via, adapter}, key, default_value})
     when is_atom(adapter) and is_binary(key),

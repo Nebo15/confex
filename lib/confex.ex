@@ -26,18 +26,12 @@ defmodule Confex do
   | `:module`   | `module()`        | Cast string to module name. |
   | `:list`     | `List.t`          | Cast comma-separated string (`1,2,3`) to list (`[1, 2, 3]`). |
 
-  Examples:
+  # Custom type casting
 
-    * `var` - any bare values will be left as-is.
-    * `{:system, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable or return `default` \
-    if it's not set or has empty value.
-    * `{:system, "ENV_NAME"}` - same as above, with default value `nil`.
-    * `{:system, :integer, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable and cast it \
-    to integer or return `default` if it's not set or has empty value.
-    * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`.
-    * `{{:via, MyAdapter}, :string, "ENV_NAME", default}` - read value by key "ENV_NAME" via adapter `MyAdapter` \
-    or return `default` if it's not set or has empty value.
-    * `{{:via, MyAdapter}, :string, "ENV_NAME"}` - same as above, with default value `nil`.
+  You can use your own casting function by replacing type with `{module, function, arguments}` tuple,
+  Confex will call that function with `apply(module, function, [value] ++ arguments)`.
+
+  This function returns either `{:ok, value}` or `{:error, reason :: String.t}` tuple.
 
   # Adapters
 
@@ -45,6 +39,21 @@ defmodule Confex do
     * `:system_file` - read file path from system environment and read configuration from this file.
 
   You can create adapter by implementing `Confex.Adapter` behaviour with your own logic.
+
+  # Examples
+
+    * `var` - any bare values will be left as-is;
+    * `{:system, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable or return `default` \
+    if it's not set or has empty value;
+    * `{:system, "ENV_NAME"}` - same as above, with default value `nil`;
+    * `{:system, :integer, "ENV_NAME", default}` - read string from "ENV_NAME" environment variable and cast it \
+    to integer or return `default` if it's not set or has empty value;
+    * `{:system, :integer, "ENV_NAME"}` - same as `{:system, :integer, "ENV_NAME", nil}`;
+    * `{{:via, MyAdapter}, :string, "ENV_NAME", default}` - read value by key "ENV_NAME" via adapter `MyAdapter` \
+    or return `default` if it's not set or has empty value;
+    * `{{:via, MyAdapter}, :string, "ENV_NAME"}` - same as above, with default value `nil`;
+    * `{:system, {MyApp.MyType, :cast, [:foo]}, "ENV_NAME"}` - `MyApp.MyType.cast(value, :foo)` call would be made \
+    to resolve environment variable value.
   """
   alias Confex.Resolver
 
@@ -273,6 +282,16 @@ expected both to be either Map or Keyword structures
           "expected both to be either Map or Keyword structures"
     end
   end
+
+  # @doc """
+  # Formats error return into a human-readable string.
+
+  # ## Example
+
+  #     iex> format_error
+  # """
+  # def format_error({:unknown, value}),
+  #   do: "unknown value: #{inspect(value)}"
 
   defp compare(_k, v1, v2) do
     if is_map(v2) or Keyword.keyword?(v2),

@@ -69,4 +69,20 @@ defmodule Confex.TypeTest do
     assert {:ok, ["a", "b", "C"]} == Type.cast(" a, b, C ", :list)
     assert {:ok, ["a", "b", "C", ""]} == Type.cast(" a, b, C, ", :list)
   end
+
+  test "cast with {m,f,a}" do
+    assert {:ok, "hello"} == Type.cast("hello", {__MODULE__, :do_cast, [:ok]})
+    assert {:error, "generic reason"} == Type.cast("hello", {__MODULE__, :do_cast, [:error]})
+
+    assert {:error, error} = Type.cast("hello", {__MODULE__, :do_cast, [:other_return]})
+    assert error == "expected `Elixir.Confex.TypeTest.do_cast/2` to return either " <>
+                    "`{:ok, value}` or `{:error, reason}` tuple, got: `:other_return`"
+  end
+
+  def do_cast(value, :ok),
+    do: {:ok, value}
+  def do_cast(_value, :error),
+    do: {:error, "generic reason"}
+  def do_cast(_value, _),
+    do: :other_return
 end

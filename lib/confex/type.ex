@@ -10,6 +10,7 @@ defmodule Confex.Type do
               | :atom
               | :module
               | :list
+              | {module :: module, function :: atom, additional_arguments :: list}
 
   @boolean_true ["true", "1", "yes"]
   @boolean_false ["false", "0", "no"]
@@ -80,5 +81,16 @@ defmodule Confex.Type do
       |> Enum.map(&String.trim/1)
 
     {:ok, result}
+  end
+  def cast(value, {module, function, additional_arguments}) do
+    case apply(module, function, [value] ++ additional_arguments) do
+      {:ok, value} -> {:ok, value}
+      {:error, reason} -> {:error, reason}
+      other_return ->
+        arity = length(additional_arguments) + 1
+        {:error, "expected `#{module}.#{function}/#{arity}` to return " <>
+                 "either `{:ok, value}` or `{:error, reason}` tuple, got: " <>
+                 "`#{inspect(other_return)}`"}
+    end
   end
 end

@@ -167,6 +167,17 @@ defmodule Confex.ResolverTest do
         == Resolver.resolve({:system, :list, "DOES_NOT_EXIST"})
     end
 
+    test "custom resolvers" do
+      System.put_env("TESTENV", "1,2,3")
+      resolver = {__MODULE__, :do_cast, []}
+      assert {:ok, "1,2,3"} == Resolver.resolve({:system, resolver, "TESTENV"})
+      assert {:ok, "2,3,4"} == Resolver.resolve({:system, resolver, "DOES_NOT_EXIST", "2,3,4"})
+
+      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
+                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
+        == Resolver.resolve({:system, resolver, "DOES_NOT_EXIST"})
+    end
+
     test "custom adapters" do
       System.put_env("TESTENV", "foo")
       assert {:ok, "foo"} ==
@@ -190,4 +201,7 @@ defmodule Confex.ResolverTest do
     assert {:ok, "DOES_NOT_EXIST"} ==
       Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, :string, "DOES_NOT_EXIST", "foo"})
   end
+
+  def do_cast(value),
+    do: {:ok, value}
 end
