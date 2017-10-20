@@ -10,7 +10,7 @@ defmodule ConfexMacrosTest do
 
     def validate_config!(config) do
       if is_nil(config) do
-        throw "Something went wrong"
+        throw("Something went wrong")
       end
 
       config
@@ -28,13 +28,13 @@ defmodule ConfexMacrosTest do
 
         def validate_config!(config) do
           if is_nil(config) do
-            throw "Something went wrong #2"
+            throw("Something went wrong #2")
           end
 
           config
         end
 
-        defoverridable [validate_config!: 1]
+        defoverridable validate_config!: 1
       end
     end
   end
@@ -50,7 +50,9 @@ defmodule ConfexMacrosTest do
     System.delete_env("TESTENV_INT")
     System.delete_env("TESTENV_REQ")
 
-    Application.put_env(:confex, ConfexMacrosTest.TestModule, [
+    Application.put_env(
+      :confex,
+      ConfexMacrosTest.TestModule,
       bare: "value",
       overriden_keyword: [list: [foo: "baz", bar: "bar"], key: "value"],
       overriden_map: %{list: %{foo: "baz", bar: "bar"}, key: "value"},
@@ -59,36 +61,34 @@ defmodule ConfexMacrosTest do
       integer_tuple_with_default: {:system, :integer, "TESTENV_INT", 300},
       string_tuple: {:system, "TESTENV"},
       string_tuple_with_default: {:system, "TESTENV", "default biz"}
-    ])
+    )
 
     :ok
   end
 
   test "uses defaults when app config can not be resolved" do
-    assert_raise ArgumentError, "can not resolve key TESTENV_REQ value via " <>
-                                "adapter Elixir.Confex.Adapters.SystemEnvironment", fn ->
+    message = "can not resolve key TESTENV_REQ value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+
+    assert_raise ArgumentError, message, fn ->
       TestModule.config()
     end
 
     System.put_env("TESTENV_REQ", "custom req value")
 
-    assert [
+    config = [
       overriden_var: "custom req value",
       overriden_keyword: [list: [foo: "foo", mix: "default mix"]],
       overriden_map: %{list: %{foo: "foo", mix: "default mix"}}
-    ] = TestModule.config()
+    ]
+
+    assert TestModule.config() == config
   end
 
   test "resolves configuration without defaults" do
     System.put_env("TESTENV", "custom value")
+    Application.put_env(:confex, ConfexMacrosTest.TestModuleWithoutDefaults, string_tuple: {:system, "TESTENV"})
 
-    Application.put_env(:confex, ConfexMacrosTest.TestModuleWithoutDefaults, [
-      string_tuple: {:system, "TESTENV"},
-    ])
-
-    assert [
-      string_tuple: "custom value"
-    ] = TestModuleWithoutDefaults.config()
+    assert TestModuleWithoutDefaults.config() == [string_tuple: "custom value"]
   end
 
   test "merges and resolves configuration" do
@@ -96,22 +96,27 @@ defmodule ConfexMacrosTest do
     System.put_env("TESTENV_INT", "600")
     System.put_env("TESTENV_REQ", "custom req value")
 
-    assert [
+    config = [
       overriden_var: "custom req value",
       bare: "value",
-      overriden_keyword: [key: "value", list: [mix: "custom value", foo: "baz", bar: "bar"]],
+      overriden_keyword: [
+        key: "value",
+        list: [mix: "custom value", foo: "baz", bar: "bar"]
+      ],
       overriden_map: %{key: "value", list: %{mix: "custom value", foo: "baz", bar: "bar"}},
       integer: 1,
       integer_tuple: 600,
       integer_tuple_with_default: 600,
       string_tuple: "custom value",
       string_tuple_with_default: "custom value"
-    ] = TestModule.config()
+    ]
+
+    assert TestModule.config() == config
   end
 
   test "can be used in intermediate marco" do
-    assert [my_default: "default value"] = TestModuleFromMacro.config()
+    assert TestModuleFromMacro.config() == [my_default: "default value"]
     System.put_env("TESTENV", "custom value")
-    assert [my_default: "custom value"] = TestModuleFromMacro.config()
+    assert TestModuleFromMacro.config() == [my_default: "custom value"]
   end
 end

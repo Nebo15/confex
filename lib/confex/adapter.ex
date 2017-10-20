@@ -6,12 +6,10 @@ defmodule Confex.Adapter do
   @doc """
   Fetch configuration value by fetch statement.
   """
-  @callback fetch_value(key :: String.t) :: {:ok, String.t} | :error
+  @callback fetch_value(key :: String.t()) :: {:ok, String.t()} | :error
 
   @doc false
   # Resolve adapter with shorthand for built-in's.
-  def to_module(:system),
-    do: Confex.Adapters.SystemEnvironment
-  def to_module(:system_file),
-    do: Confex.Adapters.SystemEnvironment
+  def to_module(:system), do: Confex.Adapters.SystemEnvironment
+  def to_module(:system_file), do: Confex.Adapters.SystemEnvironment
 end

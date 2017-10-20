@@ -6,39 +6,38 @@ defmodule Confex.ResolverTest do
   defmodule TestAdapter do
     @behaviour Confex.Adapter
 
-    def fetch_value(key),
-      do: {:ok, key}
+    def fetch_value(key), do: {:ok, key}
   end
 
   describe "resolve/1" do
     test "resolves nil values" do
-      assert {:ok, nil} == Resolver.resolve(nil)
+      assert Resolver.resolve(nil) == {:ok, nil}
     end
 
     test "resolves values in maps" do
-      assert {:ok, %{key: "default_value"}} == Resolver.resolve(%{key: {:system, "DOES_NOT_EXIST", "default_value"}})
+      assert Resolver.resolve(%{key: {:system, "DOES_NOT_EXIST", "default_value"}}) == {:ok, %{key: "default_value"}}
     end
 
     test "resolves values in nested maps" do
-      assert {:ok, %{parent: %{child: "default_value"}}}
-        == Resolver.resolve(%{parent: %{child: {:system, "DOES_NOT_EXIST", "default_value"}}})
+      config = %{parent: %{child: "default_value"}}
+      assert Resolver.resolve(%{parent: %{child: {:system, "DOES_NOT_EXIST", "default_value"}}}) == {:ok, config}
     end
 
     test "resolves values in keywords" do
-      assert {:ok, [key: "default_value"]} == Resolver.resolve([key: {:system, "DOES_NOT_EXIST", "default_value"}])
+      assert Resolver.resolve(key: {:system, "DOES_NOT_EXIST", "default_value"}) == {:ok, [key: "default_value"]}
     end
 
     test "resolves values in nested keywords" do
-      assert {:ok, [parent: [child: "default_value"]]}
-        == Resolver.resolve([parent: [child: {:system, "DOES_NOT_EXIST", "default_value"}]])
+      config = [parent: [child: "default_value"]]
+      assert Resolver.resolve(parent: [child: {:system, "DOES_NOT_EXIST", "default_value"}]) == {:ok, config}
     end
 
     test "does not resolve in tuples" do
-      assert {:ok, {1, 2, 3, {:system, "KEEP_THIS"}}} == Resolver.resolve({1, 2, 3, {:system, "KEEP_THIS"}})
+      assert Resolver.resolve({1, 2, 3, {:system, "KEEP_THIS"}}) == {:ok, {1, 2, 3, {:system, "KEEP_THIS"}}}
     end
 
     test "does not resolve in lists" do
-      assert {:ok, [1, 2, 3, {:system, "KEEP_THIS"}]} == Resolver.resolve([1, 2, 3, {:system, "KEEP_THIS"}])
+      assert Resolver.resolve([1, 2, 3, {:system, "KEEP_THIS"}]) == {:ok, [1, 2, 3, {:system, "KEEP_THIS"}]}
     end
 
     test "does not break complex structures" do
@@ -50,7 +49,7 @@ defmodule Confex.ResolverTest do
         map: %{key: [child: :value]}
       ]
 
-      assert {:ok, config} == Resolver.resolve(config)
+      assert Resolver.resolve(config) == {:ok, config}
     end
   end
 
@@ -81,6 +80,7 @@ defmodule Confex.ResolverTest do
   describe "supports all configuration styles" do
     setup do
       System.delete_env("TESTENV")
+
       on_exit(fn ->
         System.delete_env("TESTENV")
       end)
@@ -88,38 +88,46 @@ defmodule Confex.ResolverTest do
 
     test "for strings" do
       System.put_env("TESTENV", "foo")
-      assert {:ok, "foo"} == Resolver.resolve({:system, "TESTENV"})
-      assert {:ok, "foo"} == Resolver.resolve({:system, :string, "TESTENV"})
-      assert {:ok, "foo"} == Resolver.resolve({:system, "DOES_NOT_EXIST", "foo"})
-      assert {:ok, "foo"} == Resolver.resolve({:system, :string, "DOES_NOT_EXIST", "foo"})
+      assert Resolver.resolve({:system, "TESTENV"}) == {:ok, "foo"}
+      assert Resolver.resolve({:system, :string, "TESTENV"}) == {:ok, "foo"}
+      assert Resolver.resolve({:system, "DOES_NOT_EXIST", "foo"}) == {:ok, "foo"}
+      assert Resolver.resolve({:system, :string, "DOES_NOT_EXIST", "foo"}) == {:ok, "foo"}
     end
 
     test "for integers" do
       System.put_env("TESTENV", "123")
-      assert {:ok, 123} == Resolver.resolve({:system, :integer, "TESTENV"})
-      assert {:ok, 123} == Resolver.resolve({:system, :integer, "DOES_NOT_EXIST", 123})
+      assert Resolver.resolve({:system, :integer, "TESTENV"}) == {:ok, 123}
+      assert Resolver.resolve({:system, :integer, "DOES_NOT_EXIST", 123}) == {:ok, 123}
 
       System.put_env("TESTENV", "abc")
-      assert {:error, {:invalid, ~s/can not cast "abc" to Integer/}}
-        == Resolver.resolve({:system, :integer, "TESTENV", 123})
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, :integer, "DOES_NOT_EXIST"})
+      reason = {:invalid, ~s/can not cast "abc" to Integer/}
+      assert Resolver.resolve({:system, :integer, "TESTENV", 123}) == {:error, reason}
+
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, :integer, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "for floats" do
       System.put_env("TESTENV", "123.5")
-      assert {:ok, 123.5} == Resolver.resolve({:system, :float, "TESTENV"})
-      assert {:ok, 123.5} == Resolver.resolve({:system, :float, "DOES_NOT_EXIST", 123.5})
+      assert Resolver.resolve({:system, :float, "TESTENV"}) == {:ok, 123.5}
+      assert Resolver.resolve({:system, :float, "DOES_NOT_EXIST", 123.5}) == {:ok, 123.5}
 
       System.put_env("TESTENV", "abc")
-      assert {:error, {:invalid, ~s/can not cast "abc" to Float/}}
-        == Resolver.resolve({:system, :float, "TESTENV", 123.5})
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, :float, "DOES_NOT_EXIST"})
+      reason = {:invalid, ~s/can not cast "abc" to Float/}
+      assert Resolver.resolve({:system, :float, "TESTENV", 123.5}) == {:error, reason}
+
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, :float, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "for atoms" do
@@ -127,9 +135,12 @@ defmodule Confex.ResolverTest do
       assert {:ok, :abc} == Resolver.resolve({:system, :atom, "TESTENV"})
       assert {:ok, :abc} == Resolver.resolve({:system, :atom, "DOES_NOT_EXIST", :abc})
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, :atom, "DOES_NOT_EXIST"})
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, :atom, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "for modules" do
@@ -137,9 +148,12 @@ defmodule Confex.ResolverTest do
       assert {:ok, MyModule} == Resolver.resolve({:system, :module, "TESTENV"})
       assert {:ok, MyModule} == Resolver.resolve({:system, :module, "DOES_NOT_EXIST", MyModule})
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, :module, "DOES_NOT_EXIST"})
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, :module, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "for booleans" do
@@ -148,60 +162,66 @@ defmodule Confex.ResolverTest do
       assert {:ok, true} == Resolver.resolve({:system, :boolean, "DOES_NOT_EXIST", true})
 
       System.put_env("TESTENV", "abc")
-      assert {:error, {:invalid, ~s/can not cast "abc" to boolean, / <>
-                                 ~s/expected values are 'true', 'false', '1', '0', 'yes' or 'no'/}}
-        == Resolver.resolve({:system, :boolean, "TESTENV", false})
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, :boolean, "DOES_NOT_EXIST"})
+      reason = {
+        :invalid,
+        ~s/can not cast "abc" to boolean, expected values are 'true', 'false', '1', '0', 'yes' or 'no'/
+      }
+
+      assert Resolver.resolve({:system, :boolean, "TESTENV", false}) == {:error, reason}
+
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, :boolean, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "for lists" do
       System.put_env("TESTENV", "1,2,3")
-      assert {:ok, ["1", "2", "3"]} == Resolver.resolve({:system, :list, "TESTENV"})
-      assert {:ok, ["1", "2", "3"]} == Resolver.resolve({:system, :list, "DOES_NOT_EXIST", ["1", "2", "3"]})
+      assert Resolver.resolve({:system, :list, "TESTENV"}) == {:ok, ["1", "2", "3"]}
+      assert Resolver.resolve({:system, :list, "DOES_NOT_EXIST", ["1", "2", "3"]}) == {:ok, ["1", "2", "3"]}
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, :list, "DOES_NOT_EXIST"})
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, :list, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "custom resolvers" do
       System.put_env("TESTENV", "1,2,3")
       resolver = {__MODULE__, :do_cast, []}
-      assert {:ok, "1,2,3"} == Resolver.resolve({:system, resolver, "TESTENV"})
-      assert {:ok, "2,3,4"} == Resolver.resolve({:system, resolver, "DOES_NOT_EXIST", "2,3,4"})
+      assert Resolver.resolve({:system, resolver, "TESTENV"}) == {:ok, "1,2,3"}
+      assert Resolver.resolve({:system, resolver, "DOES_NOT_EXIST", "2,3,4"}) == {:ok, "2,3,4"}
 
-      assert {:error, {:unresolved, "can not resolve key DOES_NOT_EXIST value " <>
-                                    "via adapter Elixir.Confex.Adapters.SystemEnvironment"}}
-        == Resolver.resolve({:system, resolver, "DOES_NOT_EXIST"})
+      reason = {
+        :unresolved,
+        "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      }
+
+      assert Resolver.resolve({:system, resolver, "DOES_NOT_EXIST"}) == {:error, reason}
     end
 
     test "custom adapters" do
       System.put_env("TESTENV", "foo")
-      assert {:ok, "foo"} ==
-        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, "TESTENV"})
-      assert {:ok, "foo"} ==
-        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, :string, "TESTENV"})
-      assert {:ok, "foo"} ==
-        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, "DOES_NOT_EXIST", "foo"})
-      assert {:ok, "foo"} ==
-        Resolver.resolve({{:via, Confex.Adapters.SystemEnvironment}, :string, "DOES_NOT_EXIST", "foo"})
+      via_adapter = {:via, Confex.Adapters.SystemEnvironment}
+      assert Resolver.resolve({via_adapter, "TESTENV"}) == {:ok, "foo"}
+      assert Resolver.resolve({via_adapter, :string, "TESTENV"}) == {:ok, "foo"}
+      assert Resolver.resolve({via_adapter, "DOES_NOT_EXIST", "foo"}) == {:ok, "foo"}
+      assert Resolver.resolve({via_adapter, :string, "DOES_NOT_EXIST", "foo"}) == {:ok, "foo"}
     end
   end
 
   test "resolves with third-party adapters" do
-    assert {:ok, "TESTENV"} ==
-      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, "TESTENV"})
-    assert {:ok, "TESTENV"} ==
-      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, :string, "TESTENV"})
-    assert {:ok, "DOES_NOT_EXIST"} ==
-      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, "DOES_NOT_EXIST", "foo"})
-    assert {:ok, "DOES_NOT_EXIST"} ==
-      Resolver.resolve({{:via, Confex.ResolverTest.TestAdapter}, :string, "DOES_NOT_EXIST", "foo"})
+    via_adapter = {:via, Confex.ResolverTest.TestAdapter}
+    assert Resolver.resolve({via_adapter, "TESTENV"}) == {:ok, "TESTENV"}
+    assert Resolver.resolve({via_adapter, :string, "TESTENV"}) == {:ok, "TESTENV"}
+    assert Resolver.resolve({via_adapter, "DOES_NOT_EXIST", "foo"}) == {:ok, "DOES_NOT_EXIST"}
+    assert Resolver.resolve({via_adapter, :string, "DOES_NOT_EXIST", "foo"}) == {:ok, "DOES_NOT_EXIST"}
   end
 
-  def do_cast(value),
-    do: {:ok, value}
+  def do_cast(value), do: {:ok, value}
 end

@@ -57,10 +57,15 @@ defmodule Confex do
   """
   alias Confex.Resolver
 
-  @type configuration_tuple :: {value_type :: Confex.Type.type, key :: String.t, default :: any()}
-                             | {value_type :: Confex.Type.type, key :: String.t}
-                             | {key :: String.t, default :: any()}
-                             | {key :: String.t}
+  @typep app :: Application.app()
+  @typep key :: Application.key()
+  @typep value :: Application.value()
+
+  @type configuration_tuple ::
+          {value_type :: Confex.Type.type(), key :: String.t(), default :: any()}
+          | {value_type :: Confex.Type.type(), key :: String.t()}
+          | {key :: String.t(), default :: any()}
+          | {key :: String.t()}
 
   @doc """
   Returns the value for key in app’s environment in a tuple.
@@ -94,7 +99,7 @@ defmodule Confex do
       ...> {:ok, 1} = #{__MODULE__}.fetch_env(:myapp, :test_var)
       {:ok, 1}
   """
-  @spec fetch_env(app :: Application.app, key :: Application.key) :: {:ok, Application.value} | :error
+  @spec fetch_env(app :: app(), key :: key()) :: {:ok, value()} | :error
   def fetch_env(app, key) do
     with {:ok, config} <- Application.fetch_env(app, key),
          {:ok, config} <- Resolver.resolve(config) do
@@ -127,7 +132,7 @@ defmodule Confex do
       ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
       ...> #{__MODULE__}.fetch_env!(:myapp, :test_var)
       ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, \
-can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemEnvironment
+  can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemEnvironment
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
@@ -138,12 +143,14 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
       ...> 1 = #{__MODULE__}.fetch_env!(:myapp, :test_var)
       1
   """
-  @spec fetch_env!(app :: Application.app, key :: Application.key) :: Application.value | no_return
+  @spec fetch_env!(app :: app(), key :: key()) :: value() | no_return
   def fetch_env!(app, key) do
     config = Application.fetch_env!(app, key)
+
     case Resolver.resolve(config) do
       {:ok, config} ->
         config
+
       {:error, {_reason, message}} ->
         raise ArgumentError, "can't fetch value for key `#{inspect(key)}` of application `#{inspect(app)}`, #{message}"
     end
@@ -189,11 +196,7 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
       ...> 1 = #{__MODULE__}.get_env(:myapp, :test_var)
       1
   """
-  @spec get_env(
-    app :: Application.app,
-    key :: Application.key,
-    default :: Application.value
-  ) :: Application.value
+  @spec get_env(app :: app(), key :: key(), default :: value()) :: value()
   def get_env(app, key, default \\ nil) do
     with {:ok, config} <- Application.fetch_env(app, key),
          {:ok, config} <- Resolver.resolve(config) do
@@ -224,21 +227,22 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
   *Warning!* Do not use this function if you want to change your environment
   while VM is running. All `{:system, _}` tuples would be replaced with actual values.
   """
-  @spec resolve_env!(app :: Application.app) :: [{Application.key, Application.value}] | no_return
+  @spec resolve_env!(app :: app()) :: [{key(), value()}] | no_return
   def resolve_env!(app) do
     app
     |> Application.get_all_env()
-    |> Enum.map(fn {key, config} ->
-      case Resolver.resolve(config) do
-        {:ok, config} ->
-          :ok = Application.put_env(app, key, config)
-          {key, config}
+    |> Enum.map(&resolve_and_update_env(app, &1))
+  end
 
-        {:error, {_reason, message}} ->
-          raise ArgumentError, "can't fetch value for key `#{inspect(key)}` of application `#{inspect(app)}`, " <>
-                               message
-      end
-    end)
+  defp resolve_and_update_env(app, {key, config}) do
+    case Resolver.resolve(config) do
+      {:ok, config} ->
+        :ok = Application.put_env(app, key, config)
+        {key, config}
+
+      {:error, {_reason, message}} ->
+        raise ArgumentError, "can't fetch value for key `#{inspect(key)}` of application `#{inspect(app)}`, " <> message
+    end
   end
 
   @doc """
@@ -256,13 +260,12 @@ can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemE
 
       iex> #{__MODULE__}.merge_configs!(%{a: 1}, [b: 2])
       ** (ArgumentError) can not merge default values [b: 2] with configuration %{a: 1} because their types mismatch, \
-expected both to be either Map or Keyword structures
+  expected both to be either Map or Keyword structures
   """
-  @spec merge_configs!(config :: Keyword.t | map, defaults :: Keyword.t | map) :: Keyword.t | map
-  def merge_configs!(config, []),
-    do: config
-  def merge_configs!(nil, defaults),
-    do: defaults
+  @spec merge_configs!(config :: Keyword.t() | map, defaults :: Keyword.t() | map) :: Keyword.t() | map
+  def merge_configs!(config, []), do: config
+  def merge_configs!(nil, defaults), do: defaults
+
   def merge_configs!(config, defaults) do
     cond do
       Keyword.keyword?(config) and Keyword.keyword?(defaults) ->
@@ -277,26 +280,18 @@ expected both to be either Map or Keyword structures
 
       true ->
         raise ArgumentError,
-          "can not merge default values #{inspect defaults} " <>
-          "with configuration #{inspect config} because their types mismatch, " <>
-          "expected both to be either Map or Keyword structures"
+              "can not merge default values #{inspect(defaults)} " <>
+                "with configuration #{inspect(config)} because their types mismatch, " <>
+                "expected both to be either Map or Keyword structures"
     end
   end
 
-  # @doc """
-  # Formats error return into a human-readable string.
-
-  # ## Example
-
-  #     iex> format_error
-  # """
-  # def format_error({:unknown, value}),
-  #   do: "unknown value: #{inspect(value)}"
-
   defp compare(_k, v1, v2) do
-    if is_map(v2) or Keyword.keyword?(v2),
-      do: merge_configs!(v1, v2),
-    else: v2
+    if is_map(v2) or Keyword.keyword?(v2) do
+      merge_configs!(v1, v2)
+    else
+      v2
+    end
   end
 
   # Helper to include configuration into module and validate it at compile-time/run-time.
@@ -324,10 +319,9 @@ expected both to be either Map or Keyword structures
       end
 
       @spec validate_config!(config :: any()) :: any()
-      def validate_config!(config),
-        do: config
+      def validate_config!(config), do: config
 
-      defoverridable [validate_config!: 1]
+      defoverridable validate_config!: 1
     end
   end
 end
