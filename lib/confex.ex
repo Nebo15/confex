@@ -248,7 +248,7 @@ defmodule Confex do
   @doc """
   Recursively merges configuration with default values.
 
-  Both values must be either in `Keyword` or `Map` structures, otherwise ArtumentError is raised.
+  Both values must be either in `Keyword` or `Map` structures, otherwise ArgumentError is raised.
 
   ## Example
 
