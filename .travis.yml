@@ -15,11 +15,15 @@ script:
   - "mix deps.get"
   # Run all tests except pending ones
   - "mix test --exclude pending --trace"
-  # Submit code coverage report to Coveralls
-  - "mix coveralls.travis"
   # Run static code analysis
   - "mix credo"
   # Check code style
   - "mix dogma"
   # Check type safety
   - "MIX_ENV=dev mix dialyzer --unmatched_returns --error_handling --race_conditions --underspecs"
+after_script:
+  # Submit docs coverage to Inch CI
+  - mix deps.get --only docs
+  - MIX_ENV=docs mix inch.report
+  # Submit code coverage report to Coveralls
+  - "mix coveralls.travis"
