@@ -52,7 +52,7 @@ defmodule Confex.Mixfile do
       {:dogma, "> 0.1.0", only: [:dev, :test]},
       {:credo, ">= 0.8.0", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
-      {:inch_ex, only: :docs}
+      {:inch_ex, ">= 0.0.0", only: :docs}
     ]
   end
 
