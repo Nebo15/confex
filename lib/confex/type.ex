@@ -3,7 +3,7 @@ defmodule Confex.Type do
   This module is responsible for Confex type-casting.
   """
   @type value :: String.t() | nil
-  @type type ::
+  @type t ::
           :string
           | :integer
           | :float
@@ -20,7 +20,7 @@ defmodule Confex.Type do
   @doc """
   Parse string and cast it to Elixir type.
   """
-  @spec cast(value :: value, type :: type) :: {:ok, any()} | {:error, String.t()}
+  @spec cast(value :: value, type :: t()) :: {:ok, any()} | {:error, String.t()}
   def cast(nil, _type) do
     {:ok, nil}
   end

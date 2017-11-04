@@ -62,8 +62,8 @@ defmodule Confex do
   @typep value :: Application.value()
 
   @type configuration_tuple ::
-          {value_type :: Confex.Type.type(), key :: String.t(), default :: any()}
-          | {value_type :: Confex.Type.type(), key :: String.t()}
+          {value_type :: Confex.Type.t(), key :: String.t(), default :: any()}
+          | {value_type :: Confex.Type.t(), key :: String.t()}
           | {key :: String.t(), default :: any()}
           | {key :: String.t()}
 
