@@ -1,12 +1,13 @@
 defmodule Confex.Adapters.FileFromSystemEnvironment do
   @moduledoc """
-  Adapter that resolves Confex values from file which path is specified in an environment variable.
+  Adapter to fetch values from a file with path specified in a system environment variables.
   """
   @behaviour Confex.Adapter
 
   @doc """
-  Fetch value from file which path is specified in an environment variable
-  and trim trailing newline it in it's content.
+  Fetch value from file which path is specified in an environment variable.
+
+  Newline in the end of file is ignored.
 
   ## Example
 

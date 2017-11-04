@@ -1,7 +1,6 @@
 defmodule Confex.Resolver do
   @moduledoc """
-  This module provides API to recursively resolve Confex configuration types in a `Map` or `Keyword` via
-  one of `Confex.Adpater`'s.
+  This module provides API to recursively resolve system tuples in a `Map` or `Keyword` structures.
   """
   alias Confex.Adapter
   alias Confex.Type
@@ -10,9 +9,7 @@ defmodule Confex.Resolver do
   @known_adapter_aliases [:system, :system_file]
 
   @doc """
-  Resolves all configuration tuples via adapters.
-
-  Can be used when values are stored not in Application environment.
+  Resolves all system tuples in a structure.
 
   ## Example
 
@@ -48,7 +45,7 @@ defmodule Confex.Resolver do
   def resolve(config), do: maybe_resolve_with_adapter(config)
 
   @doc """
-  Same as `resolve/1` but will raise `ArgumentError` if one of configuration tuples can not be resolved.
+  Same as `resolve/1` but will raise `ArgumentError` if one of system tuples can not be resolved.
   """
   @spec resolve!(config :: any()) :: any() | no_return
   def resolve!(config) do

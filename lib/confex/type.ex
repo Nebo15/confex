@@ -1,6 +1,6 @@
 defmodule Confex.Type do
   @moduledoc """
-  This module provides API to parse strings and cast them to Elixir types.
+  This module is responsible for Confex type-casting.
   """
   @type value :: String.t() | nil
   @type type ::
