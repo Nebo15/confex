@@ -49,11 +49,13 @@ defmodule Confex.ResolverTest do
       assert Resolver.resolve(%{key: [time, time]}) == {:ok, %{key: [time, time]}}
     end
 
-    test "resolves values with Date.Range" do
-      date_range = %Date.Range{}
-      assert Resolver.resolve(date_range) == {:ok, date_range}
-      assert Resolver.resolve(%{key: date_range}) == {:ok, %{key: date_range}}
-      assert Resolver.resolve(%{key: [date_range, date_range]}) == {:ok, %{key: [date_range, date_range]}}
+    if Code.ensure_loaded?(Date.Range) do
+      test "resolves values with Date.Range" do
+        date_range = %Date.Range{}
+        assert Resolver.resolve(date_range) == {:ok, date_range}
+        assert Resolver.resolve(%{key: date_range}) == {:ok, %{key: date_range}}
+        assert Resolver.resolve(%{key: [date_range, date_range]}) == {:ok, %{key: [date_range, date_range]}}
+      end
     end
 
     test "resolves values with Regex" do
