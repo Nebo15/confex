@@ -35,6 +35,10 @@ defmodule Confex.Resolver do
     end
   end
 
+  def resolve(%Range{} = config) do
+    {:ok, config}
+  end
+
   def resolve(config) when is_map(config) do
     case Enum.reduce_while(config, %{}, &reduce_map/2) do
       {:error, reason} -> {:error, reason}
@@ -69,6 +73,10 @@ defmodule Confex.Resolver do
     end
   end
 
+  defp reduce_map({key, %Range{} = range}, acc) do
+    {:cont, Map.put(acc, key, range)}
+  end
+
   defp reduce_map({key, map}, acc) when is_map(map) do
     case Enum.reduce_while(map, %{}, &reduce_map/2) do
       {:error, reason} -> {:halt, {:error, reason}}
@@ -92,6 +100,10 @@ defmodule Confex.Resolver do
       {:error, reason} -> {:halt, {:error, reason}}
       result -> {:cont, acc ++ [{key, result}]}
     end
+  end
+
+  defp reduce_list({key, %Range{} = range}, acc) do
+    {:cont, acc ++ [{key, range}]}
   end
 
   defp reduce_list({key, map}, acc) when is_map(map) do

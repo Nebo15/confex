@@ -14,6 +14,14 @@ defmodule Confex.ResolverTest do
       assert Resolver.resolve(nil) == {:ok, nil}
     end
 
+    test "resolves values with ranges" do
+      assert Resolver.resolve(1..5) == {:ok, 1..5}
+      assert Resolver.resolve(%{key1: {:system, "FOO", "bar"}, key2: 1..5}) == {:ok, %{key1: "bar", key2: 1..5}}
+      assert Resolver.resolve(%{key: [1..5]}) == {:ok, %{key: [1..5]}}
+      assert Resolver.resolve(%{key: [1..5, 5..10]}) == {:ok, %{key: [1..5, 5..10]}}
+      assert Resolver.resolve(%{key: [foo: 1..5, bar: 5..10]}) == {:ok, %{key: [foo: 1..5, bar: 5..10]}}
+    end
+
     test "resolves values in maps" do
       assert Resolver.resolve(%{key: {:system, "DOES_NOT_EXIST", "default_value"}}) == {:ok, %{key: "default_value"}}
     end
