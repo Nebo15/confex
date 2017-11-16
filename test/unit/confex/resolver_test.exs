@@ -22,6 +22,47 @@ defmodule Confex.ResolverTest do
       assert Resolver.resolve(%{key: [foo: 1..5, bar: 5..10]}) == {:ok, %{key: [foo: 1..5, bar: 5..10]}}
     end
 
+    test "resolves values with MapSet" do
+      assert Resolver.resolve(MapSet.new()) == {:ok, MapSet.new()}
+      assert Resolver.resolve(%{key: MapSet.new()}) == {:ok, %{key: MapSet.new()}}
+      assert Resolver.resolve(%{key: [MapSet.new(), MapSet.new()]}) == {:ok, %{key: [MapSet.new(), MapSet.new()]}}
+    end
+
+    test "resolves values with Date" do
+      date = Date.utc_today()
+      assert Resolver.resolve(date) == {:ok, date}
+      assert Resolver.resolve(%{key: date}) == {:ok, %{key: date}}
+      assert Resolver.resolve(%{key: [date, date]}) == {:ok, %{key: [date, date]}}
+    end
+
+    test "resolves values with DateTime" do
+      datetime = DateTime.utc_now()
+      assert Resolver.resolve(datetime) == {:ok, datetime}
+      assert Resolver.resolve(%{key: datetime}) == {:ok, %{key: datetime}}
+      assert Resolver.resolve(%{key: [datetime, datetime]}) == {:ok, %{key: [datetime, datetime]}}
+    end
+
+    test "resolves values with Time" do
+      time = Time.utc_now()
+      assert Resolver.resolve(time) == {:ok, time}
+      assert Resolver.resolve(%{key: time}) == {:ok, %{key: time}}
+      assert Resolver.resolve(%{key: [time, time]}) == {:ok, %{key: [time, time]}}
+    end
+
+    test "resolves values with Date.Range" do
+      date_range = %Date.Range{}
+      assert Resolver.resolve(date_range) == {:ok, date_range}
+      assert Resolver.resolve(%{key: date_range}) == {:ok, %{key: date_range}}
+      assert Resolver.resolve(%{key: [date_range, date_range]}) == {:ok, %{key: [date_range, date_range]}}
+    end
+
+    test "resolves values with Regex" do
+      regex = ~r/abcde/
+      assert Resolver.resolve(regex) == {:ok, regex}
+      assert Resolver.resolve(%{key: regex}) == {:ok, %{key: regex}}
+      assert Resolver.resolve(%{key: [regex, regex]}) == {:ok, %{key: [regex, regex]}}
+    end
+
     test "resolves values in maps" do
       assert Resolver.resolve(%{key: {:system, "DOES_NOT_EXIST", "default_value"}}) == {:ok, %{key: "default_value"}}
     end

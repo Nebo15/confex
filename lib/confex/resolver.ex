@@ -39,6 +39,30 @@ defmodule Confex.Resolver do
     {:ok, config}
   end
 
+  def resolve(%MapSet{} = mapset) do
+    {:ok, mapset}
+  end
+
+  def resolve(%Date{} = date) do
+    {:ok, date}
+  end
+
+  def resolve(%DateTime{} = datetime) do
+    {:ok, datetime}
+  end
+
+  def resolve(%Time{} = time) do
+    {:ok, time}
+  end
+
+  def resolve(%Date.Range{} = date_range) do
+    {:ok, date_range}
+  end
+
+  def resolve(%Regex{} = regex) do
+    {:ok, regex}
+  end
+
   def resolve(config) when is_map(config) do
     case Enum.reduce_while(config, %{}, &reduce_map/2) do
       {:error, reason} -> {:error, reason}
@@ -77,6 +101,30 @@ defmodule Confex.Resolver do
     {:cont, Map.put(acc, key, range)}
   end
 
+  defp reduce_map({key, %MapSet{} = mapset}, acc) do
+    {:cont, Map.put(acc, key, mapset)}
+  end
+
+  defp reduce_map({key, %Date{} = date}, acc) do
+    {:cont, Map.put(acc, key, date)}
+  end
+
+  defp reduce_map({key, %DateTime{} = datetime}, acc) do
+    {:cont, Map.put(acc, key, datetime)}
+  end
+
+  defp reduce_map({key, %Time{} = time}, acc) do
+    {:cont, Map.put(acc, key, time)}
+  end
+
+  defp reduce_map({key, %Date.Range{} = date_range}, acc) do
+    {:cont, Map.put(acc, key, date_range)}
+  end
+
+  defp reduce_map({key, %Regex{} = regex}, acc) do
+    {:cont, Map.put(acc, key, regex)}
+  end
+
   defp reduce_map({key, map}, acc) when is_map(map) do
     case Enum.reduce_while(map, %{}, &reduce_map/2) do
       {:error, reason} -> {:halt, {:error, reason}}
@@ -104,6 +152,30 @@ defmodule Confex.Resolver do
 
   defp reduce_list({key, %Range{} = range}, acc) do
     {:cont, acc ++ [{key, range}]}
+  end
+
+  defp reduce_list({key, %MapSet{} = mapset}, acc) do
+    {:cont, acc ++ [{key, mapset}]}
+  end
+
+  defp reduce_list({key, %Date{} = date}, acc) do
+    {:cont, acc ++ [{key, date}]}
+  end
+
+  defp reduce_list({key, %DateTime{} = datetime}, acc) do
+    {:cont, acc ++ [{key, datetime}]}
+  end
+
+  defp reduce_list({key, %Time{} = time}, acc) do
+    {:cont, acc ++ [{key, time}]}
+  end
+
+  defp reduce_list({key, %Date.Range{} = date_range}, acc) do
+    {:cont, acc ++ [{key, date_range}]}
+  end
+
+  defp reduce_list({key, %Regex{} = regex}, acc) do
+    {:cont, acc ++ [{key, regex}]}
   end
 
   defp reduce_list({key, map}, acc) when is_map(map) do

@@ -13,7 +13,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
       ```elixir
       def deps do
-        [{:confex, "~> 3.3.0"}]
+        [{:confex, "~> 3.3.1"}]
       end
       ```
 
