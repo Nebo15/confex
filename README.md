@@ -67,8 +67,8 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
     `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
 
-  Type can re replaced with `{module, function, arguments}` tuple, in this case Confex will use external function to
-  resolve the type. Function must returns either `{:ok, value}` or `{:error, reason :: String.t}` tuple.
+    Type can re replaced with `{module, function, arguments}` tuple, in this case Confex will use external function to
+    resolve the type. Function must returns either `{:ok, value}` or `{:error, reason :: String.t}` tuple.
 
 2. Read configuration by replacing `Application.fetch_env/2`, `Application.fetch_env!/2` and `Application.get_env/3` calls with `Confex` functions
 
