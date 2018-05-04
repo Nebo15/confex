@@ -157,7 +157,7 @@ defmodule Confex do
   end
 
   @doc """
-  Returns the value for key in app’s environment in a tuple.
+  Returns the value for key in app’s environment.
   This function mimics `Application.get_env/2` function.
 
   If the configuration parameter does not exist or can not be parsed, returns default value or `nil`.
