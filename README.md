@@ -1,6 +1,7 @@
 # Confex
 
 [![Deps Status](https://beta.hexfaktor.org/badge/all/github/Nebo15/confex.svg)](https://beta.hexfaktor.org/github/Nebo15/confex) [![Inline docs](http://inch-ci.org/github/nebo15/confex.svg)](http://inch-ci.org/github/nebo15/confex) [![Hex.pm Downloads](https://img.shields.io/hexpm/dw/confex.svg?maxAge=3600)](https://hex.pm/packages/confex) [![Latest Version](https://img.shields.io/hexpm/v/confex.svg?maxAge=3600)](https://hex.pm/packages/confex) [![License](https://img.shields.io/hexpm/l/confex.svg?maxAge=3600)](https://hex.pm/packages/confex) [![Build Status](https://travis-ci.org/Nebo15/confex.svg?branch=master)](https://travis-ci.org/Nebo15/confex) [![Coverage Status](https://coveralls.io/repos/github/Nebo15/confex/badge.svg?branch=master)](https://coveralls.io/github/Nebo15/confex?branch=master) [![Ebert](https://ebertapp.io/github/Nebo15/confex.svg)](https://ebertapp.io/github/Nebo15/confex)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FNebo15%2Fconfex.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FNebo15%2Fconfex?ref=badge_shield)
 
 Confex simplifies reading configuration at run-time with adapter-based system for fetch values from any source.
 It's inspired by Phoenix `{:system, value}` definition for HTTP port and have no external dependencies.
@@ -224,3 +225,7 @@ You can create adapter by implementing `Confex.Adapter` behaviour with your own 
 * [Runtime configuration, migrations and deployment for Elixir applications](https://medium.com/nebo-15/runtime-configuration-migrations-and-deployment-for-elixir-applications-6295b892fa6a).
 * [REPLACE_OS_VARS in Distillery](https://hexdocs.pm/distillery/runtime-configuration.html#vm-args)
 * [How to config environment variables with Elixir and Exrm](http://blog.plataformatec.com.br/2016/05/how-to-config-environment-variables-with-elixir-and-exrm/) by Platformatech.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FNebo15%2Fconfex.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FNebo15%2Fconfex?ref=badge_large)
