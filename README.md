@@ -63,7 +63,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
     * `{:system, :module, "ENV_NAME"}`.
     * `{:system, :module, "ENV_NAME", MyDefault}`.
     * `{:system, :list, "ENV_NAME"}`.
-    * `{:system, :list, "ENV_NAME", [1, 2, 3]}`.
+    * `{:system, :list, "ENV_NAME", ["a", "b", "c"]}`.
 
     `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
 
