@@ -78,6 +78,11 @@ defmodule Confex.ResolverTest do
       assert Resolver.resolve(key: {:system, "DOES_NOT_EXIST", "default_value"}) == {:ok, [key: "default_value"]}
     end
 
+    test "nested lists" do
+      System.put_env("TESTENV", "foo")
+      assert Resolver.resolve(k1: [[k2: {:system, "TESTENV"}]]) == {:ok, k1: [[k2: "foo"]]}
+    end
+
     test "resolves values in nested keywords" do
       config = [parent: [child: "default_value"]]
       assert Resolver.resolve(parent: [child: {:system, "DOES_NOT_EXIST", "default_value"}]) == {:ok, config}

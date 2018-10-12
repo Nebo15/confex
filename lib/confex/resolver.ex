@@ -120,6 +120,13 @@ defmodule Confex.Resolver do
     end
   end
 
+  defp reduce_list(list, acc) when is_list(list) do
+    case Enum.reduce_while(list, [], &reduce_list/2) do
+      {:error, reason} -> {:halt, {:error, reason}}
+      result -> {:cont, acc ++ [result]}
+    end
+  end
+
   defp reduce_list(value, acc) do
     {:cont, acc ++ [value]}
   end
