@@ -7,7 +7,7 @@ defmodule Confex.Adapter do
 
     * `:system` - read configuration from system environment (`Confex.Adapters.SystemEnvironment`);
     * `:system_file` - read file path from system environment and \
-    read configuration from this file (`Confex.Adapters.SystemEnvironment`).
+    read configuration from this file (`Confex.Adapters.FileFromSystemEnvironment`).
 
   To simplify configuration syntax, Confex allows to have an alias for adapter names.
   """
@@ -20,5 +20,5 @@ defmodule Confex.Adapter do
   @doc false
   # Resolve adapter with shorthand for built-in's.
   def to_module(:system), do: Confex.Adapters.SystemEnvironment
-  def to_module(:system_file), do: Confex.Adapters.SystemEnvironment
+  def to_module(:system_file), do: Confex.Adapters.FileFromSystemEnvironment
 end
