@@ -17,7 +17,7 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
       end
       ```
 
-  2. Ensure `confex` is started before your application:
+  2. Ensure `confex` is started before your application (Don't add it for the apps using Elixir 1.4.0 or newer):
 
       ```elixir
       def application do
