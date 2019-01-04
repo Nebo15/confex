@@ -25,6 +25,7 @@ defmodule Confex do
   | `:atom`     | `atom()`          | Cast string to atom. |
   | `:module`   | `module()`        | Cast string to module name. |
   | `:list`     | `List.t`          | Cast comma-separated string (`1,2,3`) to list (`[1, 2, 3]`). |
+  | `:charlist`     | `charlist()`          | Cast string to charlist. |
 
   # Custom type casting
 

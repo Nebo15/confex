@@ -102,7 +102,8 @@ defmodule Confex.ResolverTest do
         integer: 1,
         list: [1, 2, 3],
         tuple: {1, 2, 3},
-        map: %{key: [child: :value]}
+        map: %{key: [child: :value]},
+        charlist: 'foo'
       ]
 
       assert Resolver.resolve(config) == {:ok, config}
@@ -217,6 +218,15 @@ defmodule Confex.ResolverTest do
 
       message = "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
       assert Resolver.resolve({:system, :list, "DOES_NOT_EXIST"}) == {:error, {:unresolved, message}}
+    end
+
+    test "for charlists" do
+      System.put_env("TESTENV", "abcde")
+      assert {:ok, 'abcde'} == Resolver.resolve({:system, :charlist, "TESTENV"})
+      assert {:ok, 'abcde'} == Resolver.resolve({:system, :charlist, "DOES_NOT_EXIST", 'abcde'})
+
+      message = "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
+      assert Resolver.resolve({:system, :charlist, "DOES_NOT_EXIST"}) == {:error, {:unresolved, message}}
     end
 
     test "custom resolvers" do
