@@ -13,11 +13,11 @@ It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed 
 
       ```elixir
       def deps do
-        [{:confex, "~> 3.3.1"}]
+        [{:confex, "~> 3.4.0"}]
       end
       ```
 
-  2. Ensure `confex` is started before your application either by adding it to `applications` list as shown below or by making sure you use `extra_applications` option instead of `applications` (this feature is available since Elixir 1.4 and enabled by default for new projects): 
+  2. Ensure `confex` is started before your application either by adding it to `applications` list as shown below or by making sure you use `extra_applications` option instead of `applications` (this feature is available since Elixir 1.4 and enabled by default for new projects):
 
       ```elixir
       def application do
