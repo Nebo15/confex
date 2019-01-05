@@ -132,8 +132,7 @@ defmodule Confex do
       iex> :ok = System.delete_env("MY_TEST_ENV")
       ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
       ...> #{__MODULE__}.fetch_env!(:myapp, :test_var)
-      ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, \
-  can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemEnvironment
+      ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, can not resolve key MY_TEST_ENV value via adapter Elixir.Confex.Adapters.SystemEnvironment
 
       iex> :ok = System.put_env("MY_TEST_ENV", "foo")
       ...> Application.put_env(:myapp, :test_var, {:system, :integer, "MY_TEST_ENV"})
