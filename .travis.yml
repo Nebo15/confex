@@ -4,27 +4,46 @@ cache:
   - deps
   - _build/dev
 elixir:
-  - 1.4.5
-  - 1.5.2
+  - 1.7.4
 otp_release:
-  - 20.0
+  - 21.2
 env:
   global:
     - MIX_ENV=test
+matrix:
+  include:
+    # Run tests
+    - otp_release: 21.2
+      elixir: 1.7.4
+    - otp_release: 20.2
+      elixir: 1.6.3
+    - otp_release: 20.0
+      elixir: 1.4.5
+
+    # Run docs and coveralls reporint in a separate VM
+    - script:
+      - "mix deps.get"
+    - after_script:
+      # Submit docs coverage to Inch CI
+      - "mix inch.report"
+      # Submit code coverage report to Coveralls
+      - "mix coveralls.travis"
+
+    # Run Dialyzer in a separate VM
+    - script:
+      # Install dependencies
+      - "mix deps.get"
+      - "MIX_ENV=dev mix dialyzer --unmatched_returns --error_handling --race_conditions --underspecs"
+
+    # Run Linters in a separate VM
+    - script:
+      # Make sure code is formatted
+      - "mix format --check-formatted"
+      # Run static code analysis
+      - "mix credo"
+      # Check code style
+      - "mix dogma"
 script:
-  # Install dependencies
   - "mix deps.get"
   # Run all tests except pending ones
   - "mix test --exclude pending --trace"
-  # Run static code analysis
-  - "mix credo"
-  # Check code style
-  - "mix dogma"
-  # Check type safety
-  - "MIX_ENV=dev mix dialyzer --unmatched_returns --error_handling --race_conditions --underspecs"
-after_script:
-  # Submit docs coverage to Inch CI
-  - mix deps.get --only docs
-  - MIX_ENV=docs mix inch.report
-  # Submit code coverage report to Coveralls
-  - "mix coveralls.travis"
