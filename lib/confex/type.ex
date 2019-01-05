@@ -99,9 +99,7 @@ defmodule Confex.Type do
   end
 
   def cast(value, :charlist) do
-    result =
-      value
-      |> String.to_charlist()
+    result = String.to_charlist(value)
 
     {:ok, result}
   end
