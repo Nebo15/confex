@@ -41,8 +41,6 @@ matrix:
       - "mix format --check-formatted"
       # Run static code analysis
       - "mix credo"
-      # Check code style
-      - "mix dogma"
 script:
   - "mix deps.get"
   # Run all tests except pending ones
