@@ -70,6 +70,12 @@ defmodule Confex.TypeTest do
     assert Type.cast(" a, b, C, ", :list) == {:ok, ["a", "b", "C", ""]}
   end
 
+  test "cast charlist" do
+    assert Type.cast("my_atom", :charlist) == {:ok, 'my_atom'}
+    assert Type.cast("Myatom", :charlist) == {:ok, 'Myatom'}
+    assert Type.cast("___@@*@-", :charlist) == {:ok, '___@@*@-'}
+  end
+
   test "cast with {m,f,a}" do
     assert Type.cast("hello", {__MODULE__, :do_cast, [:ok]}) == {:ok, "hello"}
     assert Type.cast("hello", {__MODULE__, :do_cast, [:error]}) == {:error, "generic reason"}

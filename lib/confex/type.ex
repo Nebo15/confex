@@ -11,6 +11,7 @@ defmodule Confex.Type do
           | :atom
           | :module
           | :list
+          | :charlist
           | {module :: module, function :: atom, additional_arguments :: list}
 
   @boolean_true ["true", "1", "yes"]
@@ -93,6 +94,12 @@ defmodule Confex.Type do
       value
       |> String.split(@list_separator)
       |> Enum.map(&String.trim/1)
+
+    {:ok, result}
+  end
+
+  def cast(value, :charlist) do
+    result = String.to_charlist(value)
 
     {:ok, result}
   end
