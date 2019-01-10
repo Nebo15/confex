@@ -5,7 +5,7 @@ defmodule Confex.Resolver do
   alias Confex.Adapter
   alias Confex.Type
 
-  @known_types [:string, :integer, :float, :boolean, :atom, :module, :list, :charlist, base64]
+  @known_types [:string, :integer, :float, :boolean, :atom, :module, :list, :charlist, :base64]
   @known_adapter_aliases [:system, :system_file]
 
   @doc """
