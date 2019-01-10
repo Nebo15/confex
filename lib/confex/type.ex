@@ -30,6 +30,14 @@ defmodule Confex.Type do
     {:ok, value}
   end
 
+  def cast(value, :base64) do
+    try do
+      {:ok, value |> Base.decode64!()}
+    rescue
+      e in ArgumentError -> {:error, e.message}
+    end
+  end
+
   def cast(value, :module) do
     {:ok, Module.concat([value])}
   end

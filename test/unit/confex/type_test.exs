@@ -13,6 +13,11 @@ defmodule Confex.TypeTest do
     assert Type.cast("my_string", :string) == {:ok, "my_string"}
   end
 
+  test "cast base64" do
+    assert Type.cast("dfads$424", :base64) == {:error, "non-alphabet digit found: \"$\" (byte 36)"}
+    assert Type.cast("onUHyQ==", :base64) == {:ok, <<162, 117, 7, 201>>}
+  end
+
   test "cast module" do
     assert Type.cast("MyModule", :module) == {:ok, MyModule}
     assert Type.cast("___@@*@#", :module) == {:ok, :"Elixir.___@@*@#"}
