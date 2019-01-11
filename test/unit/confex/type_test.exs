@@ -14,7 +14,12 @@ defmodule Confex.TypeTest do
   end
 
   test "cast base64" do
-    assert Type.cast("dfads$424", :base64) == {:error, "non-alphabet digit found: \"$\" (byte 36)"}
+    if Version.match?(System.version(), "> 1.5.0") do
+      assert Type.cast("dfads$424", :base64) == {:error, "non-alphabet digit found: \"$\" (byte 36)"}
+    else
+      assert Type.cast("dfads$424", :base64) == {:error, "incorrect padding"}
+    end
+
     assert Type.cast("onUHyQ==", :base64) == {:ok, <<162, 117, 7, 201>>}
   end
 
