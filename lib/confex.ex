@@ -224,20 +224,24 @@ defmodule Confex do
       ...> Confex.resolve_env!(:myapp)
       ** (ArgumentError) can't fetch value for key `:test_var` of application `:myapp`, can not cast "foo" to Integer
 
+  The optional `opts` argument is passed through to the internal call to
+  `Application.put_env/4` and may be used to set the `timeout` and/or
+  `persistent` parameters.
+
   *Warning!* Do not use this function if you want to change your environment
   while VM is running. All `{:system, _}` tuples would be replaced with actual values.
   """
-  @spec resolve_env!(app :: app()) :: [{key(), value()}] | no_return
-  def resolve_env!(app) do
+  @spec resolve_env!(app :: app(), opts :: Keyword.t()) :: [{key(), value()}] | no_return
+  def resolve_env!(app, opts \\ []) do
     app
     |> Application.get_all_env()
-    |> Enum.map(&resolve_and_update_env(app, &1))
+    |> Enum.map(&resolve_and_update_env(app, &1, opts))
   end
 
-  defp resolve_and_update_env(app, {key, config}) do
+  defp resolve_and_update_env(app, {key, config}, opts) do
     case Resolver.resolve(config) do
       {:ok, config} ->
-        :ok = Application.put_env(app, key, config)
+        :ok = Application.put_env(app, key, config, opts)
         {key, config}
 
       {:error, {_reason, message}} ->
