@@ -121,7 +121,23 @@ defmodule Confex.ResolverTest do
       end
     end
 
-    test "raises when variable can not be casted not exist" do
+    test "raises when string variable is blank" do
+      System.put_env("TESTENV", "")
+
+      on_exit(fn ->
+        System.delete_env("TESTENV")
+      end)
+
+      assert_raise ArgumentError, fn ->
+        Resolver.resolve!(%{key: {:system, "TESTENV"}})
+      end
+    end
+
+    test "allows blank default value when variable does not exist" do
+      assert %{key: ""} == Resolver.resolve!(%{key: {:system, :string, "DOES_NOT_EXIST", ""}})
+    end
+
+    test "raises when variable can not be casted" do
       System.put_env("TESTENV", "abc")
 
       on_exit(fn ->

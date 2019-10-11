@@ -26,7 +26,11 @@ defmodule Confex.Adapters.FileFromSystemEnvironment do
 
   defp read_value(path) do
     case File.read(path) do
-      {:ok, value} -> {:ok, String.trim_trailing(value, "\n")}
+      {:ok, value} -> 
+        case String.trim_trailing(value, "\n") do
+          "" -> :error
+          trimmed -> {:ok, trimmed}
+        end
       _ -> :error
     end
   end

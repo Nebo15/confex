@@ -18,6 +18,7 @@ defmodule Confex.Adapters.SystemEnvironment do
   def fetch_value(key) do
     case System.get_env(key) do
       nil -> :error
+      "" -> :error
       value -> {:ok, value}
     end
   end
