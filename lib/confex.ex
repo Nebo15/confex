@@ -4,7 +4,7 @@ defmodule Confex do
 
   # Configuration tuples
 
-  Whenever there is a configuration that should be resolved at run-time you need to replace it's value in `config.exs`
+  Whenever there is a configuration that should be resolved at run-time you need to replace its value in `config.exs`
   by Confex configuration type. Common structure:
 
     ```elixir
@@ -14,7 +14,7 @@ defmodule Confex do
                            | {key :: String.t}
     ```
 
-  If `value_type` is set, Confex will automatically cast it's value. Otherwise, default type of `:string` is used.
+  If `value_type` is set, Confex will automatically cast its value. Otherwise, default type of `:string` is used.
 
   | Confex Type | Elixir Type       | Description |
   | ----------- | ----------------- | ----------- |
