@@ -8,10 +8,10 @@ defmodule Confex do
   by Confex configuration type. Common structure:
 
     ```elixir
-    @type fetch_statement :: {adapter :: atom() | module(), value_type :: value_type, key :: String.t, default :: any()}
-                           | {value_type :: value_type, key :: String.t}
-                           | {key :: String.t, default :: any()}
-                           | {key :: String.t}
+    @type fetch_statement :: {adapter :: atom() | module(), value_type :: value_type, key :: any(), default :: any()}
+                           | {value_type :: value_type, key :: any()}
+                           | {key :: any(), default :: any()}
+                           | {key :: any()}
     ```
 
   If `value_type` is set, Confex will automatically cast its value. Otherwise, default type of `:string` is used.
@@ -63,10 +63,10 @@ defmodule Confex do
   @typep value :: Application.value()
 
   @type configuration_tuple ::
-          {value_type :: Confex.Type.t(), key :: String.t(), default :: any()}
-          | {value_type :: Confex.Type.t(), key :: String.t()}
-          | {key :: String.t(), default :: any()}
-          | {key :: String.t()}
+          {value_type :: Confex.Type.t(), key :: any(), default :: any()}
+          | {value_type :: Confex.Type.t(), key :: any()}
+          | {key :: any(), default :: any()}
+          | {key :: any()}
 
   @doc """
   Returns the value for key in app’s environment in a tuple.

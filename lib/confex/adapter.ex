@@ -9,13 +9,13 @@ defmodule Confex.Adapter do
     * `:system_file` - read file path from system environment and \
     read configuration from this file (`Confex.Adapters.FileFromSystemEnvironment`).
 
-  To simplify configuration syntax, Confex allows to have an alias for adapter names.
+  To simplify configuration syntax, Confex allows an alias for adapter names.
   """
 
   @doc """
   Fetch raw configuration value.
   """
-  @callback fetch_value(key :: String.t()) :: {:ok, String.t()} | :error
+  @callback fetch_value(key :: any()) :: {:ok, String.t()} | :error
 
   @doc false
   # Resolve adapter with shorthand for built-in's.
