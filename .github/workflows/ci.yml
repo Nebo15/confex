@@ -22,16 +22,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - otp-version: 24.3
+          - otp-version: 20
+            elixir-version: 1.4.5
+          - otp-version: 20
+            elixir-version: 1.6.3
+          - otp-version: 21
+            elixir-version: 1.7.4
+          - otp-version: 24
             elixir-version: 1.16
           - otp-version: 25
             elixir-version: 1.15.1
-          - otp-version: 21.2
-            elixir-version: 1.7.4
-          - otp-version: 20.2
-            elixir-version: 1.6.3
-          - otp-version: 20.0
-            elixir-version: 1.4.5
           - otp-version: 25
             elixir-version: 1.16
             check-formatted: true
