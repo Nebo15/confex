@@ -1,0 +1,86 @@
+name: Elixir
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      # required by test reporter
+      pull-requests: write
+      checks: write
+      issues: write
+      statuses: write
+    strategy:
+      matrix:
+        include:
+          - otp-version: 24.3
+            elixir-version: 1.16
+          - otp-version: 25
+            elixir-version: 1.15.1
+          - otp_release: 21.2
+            elixir-version: 1.7.4
+          - otp_release: 20.2
+            elixir-version: 1.6.3
+          - otp_release: 20.0
+            elixir-version: 1.4.5
+          - otp-version: 25
+            elixir-version: 1.16
+            check-formatted: true
+            report-coverage: true
+            type-check: true
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: ${{ matrix.elixir-version }}
+        otp-version: ${{ matrix.otp-version }}
+    - name: Restore dependencies cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          deps
+          _build
+        key: deps-${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}-elixir-${{ matrix.elixir-version }}-otp-${{ matrix.otp-version }}
+    - name: Install and compile dependencies
+      env:
+        MIX_ENV: test
+      run: mix do deps.get, deps.compile
+    - name: Make sure code is formatted
+      env:
+        MIX_ENV: test
+      if: ${{ matrix.check-formatted == true }}
+      run: mix format --check-formatted
+    - name: Run tests
+      env:
+        MIX_ENV: test
+      run: mix test --exclude pending
+    - name: Test Report
+      env:
+        MIX_ENV: test
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Mix Tests on Elixir ${{ matrix.elixir-version }} / OTP ${{ matrix.otp-version }}
+        path: _build/test/lib/logger_json/test-junit-report.xml
+        reporter: java-junit
+    - name: Report code coverage
+      env:
+        MIX_ENV: test
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: ${{ matrix.report-coverage == true }}
+      run: mix coveralls.github
+    - name: Type check
+      env:
+        MIX_ENV: dev
+      if: ${{ matrix.type-check == true }}
+      run: "MIX_ENV=dev mix dialyzer --unmatched_returns --error_handling --underspecs"
