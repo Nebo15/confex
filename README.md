@@ -1,12 +1,11 @@
 # Confex
 
-[![Inline docs](http://inch-ci.org/github/nebo15/confex.svg)](http://inch-ci.org/github/nebo15/confex)
-[![Hex.pm Downloads](https://img.shields.io/hexpm/dw/confex.svg?maxAge=3600)](https://hex.pm/packages/confex)
-[![Latest Version](https://img.shields.io/hexpm/v/confex.svg?maxAge=3600)](https://hex.pm/packages/confex)
-[![License](https://img.shields.io/hexpm/l/confex.svg?maxAge=3600)](https://hex.pm/packages/confex)
 [![Build Status](https://travis-ci.org/Nebo15/confex.svg?branch=master)](https://travis-ci.org/Nebo15/confex)
 [![Coverage Status](https://coveralls.io/repos/github/Nebo15/confex/badge.svg?branch=master)](https://coveralls.io/github/Nebo15/confex?branch=master)
-[![Ebert](https://ebertapp.io/github/Nebo15/confex.svg)](https://ebertapp.io/github/Nebo15/confex)
+[![Module Version](https://img.shields.io/hexpm/v/confex.svg)](https://hex.pm/packages/confex)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/confex/)
+[![Hex Download Total](https://img.shields.io/hexpm/dt/confex.svg)](https://hex.pm/packages/confex)
+[![License](https://img.shields.io/hexpm/l/confex.svg)](https://github.com/Nebo15/confex/blob/master/LICENSE.md)
 
 Confex simplifies reading configuration at run-time with adapter-based system for fetch values from any source.
 It's inspired by Phoenix `{:system, value}` definition for HTTP port and have no external dependencies.
@@ -15,91 +14,91 @@ It's inspired by Phoenix `{:system, value}` definition for HTTP port and have no
 
 It's available on [hex.pm](https://hex.pm/packages/confex) and can be installed as project dependency:
 
-  1. Add `confex` to your list of dependencies in `mix.exs`:
+1. Add `confex` to your list of dependencies in `mix.exs`:
 
-      ```elixir
-      def deps do
-        [{:confex, "~> 3.5.0"}]
-      end
-      ```
+   ```elixir
+   def deps do
+     [{:confex, "~> 3.5.0"}]
+   end
+   ```
 
-  2. Ensure `confex` is started before your application either by adding it to `applications` list as shown below or by making sure you use `extra_applications` option instead of `applications` (this feature is available since Elixir 1.4 and enabled by default for new projects):
+2. Ensure `confex` is started before your application either by adding it to `applications` list as shown below or by making sure you use `extra_applications` option instead of `applications` (this feature is available since Elixir 1.4 and enabled by default for new projects):
 
-      ```elixir
-      def application do
-        [applications: [:confex]]
-      end
-      ```
+   ```elixir
+   def application do
+     [applications: [:confex]]
+   end
+   ```
 
 # Usage
 
 1. Replace values with configuration tuples
 
-    Define configuration in your `config.exs`:
+   Define configuration in your `config.exs`:
 
-      ```elixir
-      config :my_app, MyApp.MyQueue,
-        queue: [
-          name:        {:system, "OUT_QUEUE_NAME", "MyQueueOut"},
-          error_name:  {:system, "OUT_ERROR_QUEUE_NAME", "MyQueueOut.Errors"},
-          routing_key: {:system, "OUT_ROUTING_KEY", ""},
-          durable:     {:system, "OUT_DURABLE", false},
-          port:        {:system, :integer, "OUT_PORT", 1234},
-        ]
-      ```
+   ```elixir
+   config :my_app, MyApp.MyQueue,
+     queue: [
+       name:        {:system, "OUT_QUEUE_NAME", "MyQueueOut"},
+       error_name:  {:system, "OUT_ERROR_QUEUE_NAME", "MyQueueOut.Errors"},
+       routing_key: {:system, "OUT_ROUTING_KEY", ""},
+       durable:     {:system, "OUT_DURABLE", false},
+       port:        {:system, :integer, "OUT_PORT", 1234},
+     ]
+   ```
 
-    Configuration tuples examples:
+   Configuration tuples examples:
 
-    * `var` - any bare values will be left as-is.
-    * `{:system, "ENV_NAME", "default"}` - read string from system environment or fallback to `"default"` if it is not set.
-    * `{:system, "ENV_NAME"}` - same as above, but raise error if `ENV_NAME` is not set.
+   - `var` - any bare values will be left as-is.
+   - `{:system, "ENV_NAME", "default"}` - read string from system environment or fallback to `"default"` if it is not set.
+   - `{:system, "ENV_NAME"}` - same as above, but raise error if `ENV_NAME` is not set.
 
-    Additionally you can cast string values to common types:
+   Additionally you can cast string values to common types:
 
-    * `{:system, :string, "ENV_NAME", "default"}` (string is a default type).
-    * `{:system, :string, "ENV_NAME"}`.
-    * `{:system, :integer, "ENV_NAME", 123}`.
-    * `{:system, :integer, "ENV_NAME"}`.
-    * `{:system, :float, "ENV_NAME", 123.5}`.
-    * `{:system, :float, "ENV_NAME"}`.
-    * `{:system, :boolean, "ENV_NAME", true}`.
-    * `{:system, :boolean, "ENV_NAME"}`.
-    * `{:system, :atom, "ENV_NAME"}`.
-    * `{:system, :atom, "ENV_NAME", :default}`.
-    * `{:system, :module, "ENV_NAME"}`.
-    * `{:system, :module, "ENV_NAME", MyDefault}`.
-    * `{:system, :list, "ENV_NAME"}`.
-    * `{:system, :list, "ENV_NAME", ["a", "b", "c"]}`.
-    * `{:system, :charlist, "ENV_NAME"}`.
-    * `{:system, :charlist, "ENV_NAME", 'default'}`.
+   - `{:system, :string, "ENV_NAME", "default"}` (string is a default type).
+   - `{:system, :string, "ENV_NAME"}`.
+   - `{:system, :integer, "ENV_NAME", 123}`.
+   - `{:system, :integer, "ENV_NAME"}`.
+   - `{:system, :float, "ENV_NAME", 123.5}`.
+   - `{:system, :float, "ENV_NAME"}`.
+   - `{:system, :boolean, "ENV_NAME", true}`.
+   - `{:system, :boolean, "ENV_NAME"}`.
+   - `{:system, :atom, "ENV_NAME"}`.
+   - `{:system, :atom, "ENV_NAME", :default}`.
+   - `{:system, :module, "ENV_NAME"}`.
+   - `{:system, :module, "ENV_NAME", MyDefault}`.
+   - `{:system, :list, "ENV_NAME"}`.
+   - `{:system, :list, "ENV_NAME", ["a", "b", "c"]}`.
+   - `{:system, :charlist, "ENV_NAME"}`.
+   - `{:system, :charlist, "ENV_NAME", 'default'}`.
 
-    `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
+   `:system` can be replaced with a `{:via, adapter}` tuple, where adapter is a module that implements `Confex.Adapter` behaviour.
 
-    Type can be replaced with `{module, function, arguments}` tuple, in this case Confex will use external function to
-    resolve the type. Function must returns either `{:ok, value}` or `{:error, reason :: String.t}` tuple.
+   Type can be replaced with `{module, function, arguments}` tuple, in this case Confex will use external function to
+   resolve the type. Function must returns either `{:ok, value}` or `{:error, reason :: String.t}` tuple.
 
 2. Read configuration by replacing `Application.fetch_env/2`, `Application.fetch_env!/2` and `Application.get_env/3` calls with `Confex` functions
 
-    Fetch string values:
+   Fetch string values:
 
-      ```elixir
-      iex> Confex.fetch_env(:myapp, MyKey)
-      {:ok, "abc"}
-      ```
+   ```elixir
+   iex> Confex.fetch_env(:myapp, MyKey)
+   {:ok, "abc"}
+   ```
 
-    Fetch integer values:
+   Fetch integer values:
 
-      ```elixir
-      iex> Confex.fetch_env(:myapp, MyIntKey)
-      {:ok, 123}
-      ```
+   ```elixir
+   iex> Confex.fetch_env(:myapp, MyIntKey)
+   {:ok, 123}
+   ```
 
-    Fetch configuration from maps or keywords:
+   Fetch configuration from maps or keywords:
 
-      ```elixir
-      iex> Confex.fetch_env(:myapp, MyIntKey)
-      {:ok, [a: 123, b: "abc"]}
-      ```
+   ```elixir
+   iex> Confex.fetch_env(:myapp, MyIntKey)
+   {:ok, [a: 123, b: "abc"]}
+   ```
 
 ## Integrating with Ecto
 
@@ -158,18 +157,18 @@ end
 In case you want to keep using `Application.get_env/2` and other methods to keep accessing configuration,
 you can resolve it one-time when application is started:
 
-  ```elixir
-  defmodule MyApp do
-    use Application
+```elixir
+defmodule MyApp do
+  use Application
 
-    def start(_type, _args) do
-      # Replace Application environment with resolved values
-      Confex.resolve_env!(:my_app)
+  def start(_type, _args) do
+    # Replace Application environment with resolved values
+    Confex.resolve_env!(:my_app)
 
-      # ...
-    end
+    # ...
   end
-  ```
+end
+```
 
 However, don't drink too much Kool-Aid. Direct calls to the Confex are more explicit and should be default way to go,
 you don't want your colleagues to waste their time finding out how that resolved value got into the configuration,
@@ -179,56 +178,56 @@ right?
 
 Confex is supplied with helper macros that allow to attach configuration to specific modules of your application.
 
-  ```elixir
-  defmodule Connection do
-    use Confex, otp_app: :myapp
-  end
-  ```
+```elixir
+defmodule Connection do
+  use Confex, otp_app: :myapp
+end
+```
 
-  It will add `config/0` function to `Connection` module that reads configuration at run-time for `:myapp` OTP application with key `Connection`.
+It will add `config/0` function to `Connection` module that reads configuration at run-time for `:myapp` OTP application with key `Connection`.
 
 You can add defaults by extending macro options:
 
-  ```elixir
-  defmodule Connection do
-    use Confex,
-      otp_app: :myapp,
-      some_value: {:system, "ENV_NAME", "this_will_be_default value"}
-  end
-  ```
+```elixir
+defmodule Connection do
+  use Confex,
+    otp_app: :myapp,
+    some_value: {:system, "ENV_NAME", "this_will_be_default value"}
+end
+```
 
-  If application environment contains values in `Keyword` or `Map` structs, default values will be recursively merged with application configuration.
+If application environment contains values in `Keyword` or `Map` structs, default values will be recursively merged with application configuration.
 
-  We recommend to avoid using tuples without default values in this case, since `config/0` calls will raise exceptions if they are not resolved.
+We recommend to avoid using tuples without default values in this case, since `config/0` calls will raise exceptions if they are not resolved.
 
 You can validate configuration by overriding `validate_config!/1` function, which will receive configuration and must return it back to caller function. It will be evaluated each time `config/1` is called.
 
-  ```elixir
-  defmodule Connection do
-    use Confex, otp_app: :myapp
+```elixir
+defmodule Connection do
+  use Confex, otp_app: :myapp
 
-    def validate_config!(config) do
-      unless config[:password] do
-        raise "Password is not set!"
-      end
-
-      config
+  def validate_config!(config) do
+    unless config[:password] do
+      raise "Password is not set!"
     end
+
+    config
   end
-  ```
+end
+```
 
 # Adapters
 
 Currently Confex supports two embedded adapters:
 
-  * `:system` - read configuration from system environment;
-  * `:system_file` - read file path from system environment and read configuration from this file. Useful when you want to resolve Docker, Swarm or Kubernetes secrets that are stored in files.
+- `:system` - read configuration from system environment;
+- `:system_file` - read file path from system environment and read configuration from this file. Useful when you want to resolve Docker, Swarm or Kubernetes secrets that are stored in files.
 
 You can create adapter by implementing `Confex.Adapter` behaviour with your own logic.
 
 # Helpful links
 
-* [Docs](https://hexdocs.pm/confex)
-* [Runtime configuration, migrations and deployment for Elixir applications](https://medium.com/nebo-15/runtime-configuration-migrations-and-deployment-for-elixir-applications-6295b892fa6a).
-* [REPLACE_OS_VARS in Distillery](https://hexdocs.pm/distillery/runtime-configuration.html#vm-args)
-* [How to config environment variables with Elixir and Exrm](http://blog.plataformatec.com.br/2016/05/how-to-config-environment-variables-with-elixir-and-exrm/) by Platformatech.
+- [Docs](https://hexdocs.pm/confex)
+- [Runtime configuration, migrations and deployment for Elixir applications](https://medium.com/nebo-15/runtime-configuration-migrations-and-deployment-for-elixir-applications-6295b892fa6a).
+- [REPLACE_OS_VARS in Distillery](https://hexdocs.pm/distillery/runtime-configuration.html#vm-args)
+- [How to config environment variables with Elixir and Exrm](http://blog.plataformatec.com.br/2016/05/how-to-config-environment-variables-with-elixir-and-exrm/) by Platformatech.
