@@ -49,7 +49,7 @@ defmodule Confex.Mixfile do
   defp package do
     [
       contributors: ["Andrew Dryga"],
-      maintainers: ["Nebo #15"],
+      maintainers: ["Andrew Dryga"],
       licenses: ["LICENSE.md"],
       links: %{Changelog: "#{@source_url}/blob/master/CHANGELOG.md}", GitHub: @source_url},
       files: ~w(lib LICENSE.md mix.exs README.md)
