@@ -1,6 +1,6 @@
 # Confex
 
-[![Build Status](https://travis-ci.org/Nebo15/confex.svg?branch=master)](https://travis-ci.org/Nebo15/confex)
+[![Build Status](https://github.com/Nebo15/confex/actions/workflows/ci.yml/badge.svg)](https://github.com/Nebo15/confex/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/Nebo15/confex/badge.svg?branch=master)](https://coveralls.io/github/Nebo15/confex?branch=master)
 [![Module Version](https://img.shields.io/hexpm/v/confex.svg)](https://hex.pm/packages/confex)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/confex/)
