@@ -56,15 +56,6 @@ jobs:
       env:
         MIX_ENV: test
       run: mix test --exclude pending
-    - name: Test Report
-      env:
-        MIX_ENV: test
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Mix Tests on Elixir ${{ matrix.elixir-version }} / OTP ${{ matrix.otp-version }}
-        path: _build/test/lib/logger_json/test-junit-report.xml
-        reporter: java-junit
     - name: Report code coverage
       env:
         MIX_ENV: test
