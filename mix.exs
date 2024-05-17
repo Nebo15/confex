@@ -2,7 +2,7 @@ defmodule Confex.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/Nebo15/confex"
-  @version "3.5.0"
+  @version "3.5.1"
 
   def project do
     [
@@ -34,7 +34,7 @@ defmodule Confex.Mixfile do
       {:ex_doc, "~> 0.19", only: :dev},
       {:excoveralls, ">= 0.7.0", only: [:dev, :test]},
       {:credo, ">= 0.8.0", only: [:dev, :test]},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:inch_ex, ">= 0.0.0", only: :docs}
     ]
   end
@@ -48,9 +48,9 @@ defmodule Confex.Mixfile do
 
   defp package do
     [
-      contributors: ["Nebo #15"],
+      contributors: ["Andrew Dryga"],
       maintainers: ["Nebo #15"],
-      licenses: ["LISENSE.md"],
+      licenses: ["LICENSE.md"],
       links: %{Changelog: "#{@source_url}/blob/master/CHANGELOG.md}", GitHub: @source_url},
       files: ~w(lib LICENSE.md mix.exs README.md)
     ]
