@@ -51,7 +51,7 @@ defmodule Confex.ResolverTest do
 
     if Code.ensure_loaded?(Date.Range) do
       test "resolves values with Date.Range" do
-        date_range = %Date.Range{}
+        date_range = Date.range(Date.utc_today(), Date.utc_today() |> Date.add(1))
         assert Resolver.resolve(date_range) == {:ok, date_range}
         assert Resolver.resolve(%{key: date_range}) == {:ok, %{key: date_range}}
         assert Resolver.resolve(%{key: [date_range, date_range]}) == {:ok, %{key: [date_range, date_range]}}
@@ -103,7 +103,7 @@ defmodule Confex.ResolverTest do
         list: [1, 2, 3],
         tuple: {1, 2, 3},
         map: %{key: [child: :value]},
-        charlist: 'foo'
+        charlist: ~c"foo"
       ]
 
       assert Resolver.resolve(config) == {:ok, config}
@@ -222,8 +222,8 @@ defmodule Confex.ResolverTest do
 
     test "for charlists" do
       System.put_env("TESTENV", "abcde")
-      assert {:ok, 'abcde'} == Resolver.resolve({:system, :charlist, "TESTENV"})
-      assert {:ok, 'abcde'} == Resolver.resolve({:system, :charlist, "DOES_NOT_EXIST", 'abcde'})
+      assert {:ok, ~c"abcde"} == Resolver.resolve({:system, :charlist, "TESTENV"})
+      assert {:ok, ~c"abcde"} == Resolver.resolve({:system, :charlist, "DOES_NOT_EXIST", ~c"abcde"})
 
       message = "can not resolve key DOES_NOT_EXIST value via adapter Elixir.Confex.Adapters.SystemEnvironment"
       assert Resolver.resolve({:system, :charlist, "DOES_NOT_EXIST"}) == {:error, {:unresolved, message}}
